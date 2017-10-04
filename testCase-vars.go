@@ -11,3 +11,13 @@ func lTestCaseGet(L *lua.LState) int {
 	L.Push(lua.LString(v))
 	return 1
 }
+
+func lTestCaseSet(L *lua.LState) int {
+	tc := luaToTestCase(L)
+	key := L.CheckString(2)
+	value := L.ToString(3)
+
+	tc.Set(key, value)
+
+	return 0
+}
