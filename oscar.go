@@ -69,6 +69,8 @@ func (o *Oscar) InjectModule(L *lua.LState) {
 			"assertJSONXPath": lTestCaseAssertJSONXPath,
 			"get":             lTestCaseGet,
 			"httpPost":        lTestCaseHTTPPost,
+			"jsonPath":        lJSONPathExtract,
+			"jsonXPath":       lJSONPathExtract,
 			"set":             lTestCaseSet,
 			"log":             lTestCaseLog,
 		}))

@@ -70,7 +70,14 @@ Oscar uses variables map to replace placeholders in own methods. There are two m
 Test case is allowed to read only own values map, but if value for requested key is not found, it
 automatically falls back to global environment map. Reading can be achieved using `:get` method
 or during variable interpolation process.
- 
+
+## Module-level functions 
+
+### `add(name, function)`
+
+Registers new test case with name, passes as first argument. Second arguments stands for callback function,
+that will be invoked on test case execution. Upon invocation, `TestCase` object will be passed to callback
+as first and only argument
 
 ## TestCase object
 
@@ -118,3 +125,16 @@ Performs HTTP request and writes response data into variables.
 | `http.response.code` | HTTP status code |
 | `http.response.body` | Full response body |
 | `http.response.header.<name>` | Multiple values. Each response header will have own key |
+
+### JSON 
+
+Syntax: `jsonXPath(path, body)`
+         
+ Invokes JSON XPath query from `path` on `body` and returns invocation result. Interpolation also works
+ 
+ ```lua
+ local o = require("oscar")
+ 
+ local v = o.jsonXPath("$.foo.bar", '{"foo":{"bar": 10}}')
+ -- v = "10"
+ ``` 
