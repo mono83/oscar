@@ -40,21 +40,23 @@ func lTestCaseAssertJSONXPath(L *lua.LState) int {
 			xpath,
 			err.Error(),
 		))
-		tc.assertDone(false)
+		tc.assertDone(nil)
 		L.RaiseError(err.Error())
 	} else {
 		tc.oscar.tracef(`Assert "%s" (actual, left) equals "%s"`, actual, expected)
 		success := actual == expected
-		tc.assertDone(success)
 		if !success {
-			tc.logError(fmt.Sprintf(
+			err := fmt.Errorf(
 				`JSON XPath assertion failed. "%s" (actual, left) != "%s".%s`,
 				actual,
 				expected,
 				doc,
-			))
+			)
+			tc.assertDone(err)
+			tc.logError(err.Error())
 			L.RaiseError("Assertion failed")
 		} else {
+			tc.assertDone(nil)
 			tc.oscar.tracef(`Assertion OK. "%s" == "%s"`, xpath, expected)
 		}
 	}

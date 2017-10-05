@@ -2,3 +2,4 @@
 /dev/
 /release/
 *.iml
+.DS_Store

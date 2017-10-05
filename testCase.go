@@ -16,6 +16,7 @@ type TestCase struct {
 	Function *lua.LFunction
 	Vars     map[string]string
 
+	Error                                      error
 	CntAssertSuccess, CntAssertFail, CntRemote int
 	startedAt, finishedAt                      time.Time
 
@@ -107,10 +108,11 @@ func (t *TestCase) Interpolate(value string) string {
 }
 
 // assertDone registers assert attempt
-func (t *TestCase) assertDone(success bool) {
-	if success {
+func (t *TestCase) assertDone(err error) {
+	if err == nil {
 		t.CntAssertSuccess++
 	} else {
+		t.Error = err
 		t.CntAssertFail++
 	}
 }

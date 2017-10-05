@@ -106,6 +106,25 @@ func (o *Oscar) Start(L *lua.LState) (err error) {
 		}
 	}
 
+	if err != nil {
+		// Printing error details
+		fmt.Fprintln(o.output())
+		fmt.Fprintln(o.output(), " Errors:")
+		i := 1
+		for _, s := range o.Cases {
+			if s.Error != nil {
+				fmt.Fprintf(o.output(), "  %d. %s\n", i, s.Name)
+				fmt.Fprintln(o.output(), "     ", s.Error)
+				for k, v := range s.Vars {
+					fmt.Fprintln(o.output(), "      ", k, ":=", v)
+				}
+				fmt.Fprintln(o.output())
+				i++
+			}
+		}
+		fmt.Fprintln(o.output())
+	}
+
 	// Building global aftermath
 	longest := len("Test suite")
 	for _, s := range o.Cases {

@@ -34,7 +34,7 @@ func lTestCaseHTTPPost(L *lua.LState) int {
 	req, err := http.NewRequest("POST", url, bytes.NewBufferString(body))
 	req.Header = headers
 	if err != nil {
-		tc.assertDone(false)
+		tc.assertDone(err)
 		L.RaiseError(err.Error())
 		return 0
 	}
@@ -55,7 +55,7 @@ func lTestCaseHTTPPost(L *lua.LState) int {
 	before := time.Now()
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		tc.assertDone(false)
+		tc.assertDone(err)
 		L.RaiseError(err.Error())
 		return 0
 	}
@@ -63,7 +63,7 @@ func lTestCaseHTTPPost(L *lua.LState) int {
 
 	bts, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		tc.assertDone(false)
+		tc.assertDone(err)
 		L.RaiseError(err.Error())
 		return 0
 	}
@@ -91,6 +91,6 @@ func lTestCaseHTTPPost(L *lua.LState) int {
 		),
 	)
 
-	tc.assertDone(true)
+	tc.assertDone(nil)
 	return 0
 }
