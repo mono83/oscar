@@ -60,8 +60,8 @@ func (t *TestCase) Run(L *lua.LState) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			t.oscar.tracef("Recovered panic %+v", r)
-			t.CntAssertFail++
 			err = fmt.Errorf("%+v", r)
+			t.assertDone(err)
 		}
 
 		t.finishedAt = time.Now()
