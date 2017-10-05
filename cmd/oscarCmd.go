@@ -10,5 +10,6 @@ var OscarCmd = &cobra.Command{
 func init() {
 	OscarCmd.AddCommand(
 		runCmd,
+		nopCmd,
 	)
 }
