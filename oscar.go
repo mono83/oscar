@@ -72,7 +72,8 @@ func (o *Oscar) InjectModule(L *lua.LState) {
 			"jsonPath":        lJSONPathExtract,
 			"jsonXPath":       lJSONPathExtract,
 			"set":             lTestCaseSet,
-			"log":             lTestCaseLog,
+			"log":             lTestCaseDebug,
+			"info":            lTestCaseInfo,
 		}))
 
 		// register functions to the table

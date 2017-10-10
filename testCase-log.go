@@ -7,45 +7,45 @@ import (
 	"time"
 )
 
-var colorLogTime = color.New(color.FgBlue)
-var colorLogName = color.New(color.FgWhite)
-var colorLogMessage = color.New(color.FgHiBlack)
-var colorLogInfo = color.New(color.FgHiCyan)
+var colorLogTime = color.New(color.FgWhite)
+
+//var colorLogName = color.New(color.FgWhite)
+var colorLogDebug = color.New(color.FgHiBlack)
+var colorLogInfo = color.New(color.FgCyan)
+var colorLogTestCase = color.New(color.FgHiGreen)
 var colorLogError = color.New(color.FgHiYellow)
 
-func lTestCaseLog(L *lua.LState) int {
+func lTestCaseDebug(L *lua.LState) int {
 	if t := luaToTestCase(L); t != nil {
-		t.log(L.ToString(2))
+		t.print("  "+L.ToString(2), colorLogDebug)
 	}
 	return 0
 }
 
-func (t TestCase) log(message string) {
+func lTestCaseInfo(L *lua.LState) int {
+	if t := luaToTestCase(L); t != nil {
+		t.print("  "+L.ToString(2), colorLogInfo)
+	}
+	return 0
+}
+
+func (t TestCase) print(message string, c *color.Color) {
 	fmt.Fprintf(
 		t.oscar.output(),
-		"%s %s %s\n",
+		"%s %s\n",
 		colorLogTime.Sprint(time.Now().Format("15:04:05")),
-		colorLogName.Sprint("["+t.Name+"]"),
-		colorLogMessage.Sprint(t.Interpolate(message)),
+		c.Sprint(t.Interpolate(message)),
 	)
 }
 
-func (t TestCase) logInfo(message string) {
-	fmt.Fprintf(
-		t.oscar.output(),
-		"%s %s %s\n",
-		colorLogTime.Sprint(time.Now().Format("15:04:05")),
-		colorLogName.Sprint("["+t.Name+"]"),
-		colorLogInfo.Sprint(message),
-	)
+func (t TestCase) logDebug(message string) {
+	t.print("  "+message, colorLogDebug)
+}
+
+func (t TestCase) logTestCase(message string) {
+	t.print(message, colorLogTestCase)
 }
 
 func (t TestCase) logError(message string) {
-	fmt.Fprintf(
-		t.oscar.output(),
-		"%s %s %s\n",
-		colorLogTime.Sprint(time.Now().Format("15:04:05")),
-		colorLogName.Sprint("["+t.Name+"]"),
-		colorLogError.Sprint(message),
-	)
+	t.print(message, colorLogError)
 }

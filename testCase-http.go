@@ -83,7 +83,7 @@ func lTestCaseHTTPPost(L *lua.LState) int {
 		}
 	}
 
-	tc.log(
+	tc.logDebug(
 		fmt.Sprintf("HTTP request done in %s, received %d bytes with code %d",
 			delta,
 			len(bts),

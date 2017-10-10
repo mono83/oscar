@@ -49,13 +49,13 @@ func (t *TestCase) printAftermath() {
 	if t.CntAssertFail > 0 {
 		t.logError(fmt.Sprintf("Test case failed. Success: %d, failed %d", t.CntAssertSuccess, t.CntAssertFail))
 	} else {
-		t.logInfo(fmt.Sprintf("Test case done in %.2f sec. Assertions: %d", delta.Seconds(), t.CntAssertSuccess))
+		t.logTestCase(fmt.Sprintf("Test case done in %.2f sec. Assertions: %d", delta.Seconds(), t.CntAssertSuccess))
 	}
 }
 
 // Run starts all assertions and operations within test case
 func (t *TestCase) Run(L *lua.LState) (err error) {
-	t.logInfo("Running test case " + t.Name)
+	t.logTestCase("Running test case " + t.Name)
 	t.oscar.tracef("Invoking %s", t.Name)
 	defer func() {
 		if r := recover(); r != nil {
