@@ -42,6 +42,7 @@ func lTestCaseHTTPPost(L *lua.LState) int {
 	// Filling request data into vars
 	tc.Set("http.request.url", url)
 	tc.Set("http.request.body", body)
+	tc.Set("http.request.length", strconv.Itoa(len(body)))
 	for name, hh := range req.Header {
 		for _, h := range hh {
 			if len(h) > 0 {

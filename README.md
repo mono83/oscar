@@ -127,8 +127,13 @@ Performs HTTP request and writes response data into variables.
 | ------------- | --------| 
 | `http.elapsed` | Time (in milliseconds), taken by request|
 | `http.response.code` | HTTP status code |
+| `http.response.length` | Response body length, in bytes |
 | `http.response.body` | Full response body |
 | `http.response.header.<name>` | Multiple values. Each response header will have own key |
+| `http.request.url` | HTTP request URL |
+| `http.request.length` | Request body length, in bytes |
+| `http.request.body` | Full request body |
+| `http.response.request.<name>` | Multiple values. Each request header will have own key |
 
 ### JSON 
 
