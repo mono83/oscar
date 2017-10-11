@@ -30,7 +30,7 @@ func lTestCaseHTTPPost(L *lua.LState) int {
 	}
 
 	// Building HTTP request
-	tc.oscar.tracef("Preparing HTTP request to %s", url)
+	tc.Trace("Preparing HTTP request to %s", url)
 	req, err := http.NewRequest("POST", url, bytes.NewBufferString(body))
 	req.Header = headers
 	if err != nil {
@@ -52,9 +52,9 @@ func lTestCaseHTTPPost(L *lua.LState) int {
 	}
 
 	// Sending HTTP request
-	tc.CntRemote++
 	before := time.Now()
 	resp, err := httpClient.Do(req)
+	tc.Emit(RemoteRequestEvent{Type: "HTTP-POST", Elapsed: time.Now().Sub(before), Success: err == nil})
 	if err != nil {
 		tc.assertDone(err)
 		L.RaiseError(err.Error())
@@ -84,12 +84,16 @@ func lTestCaseHTTPPost(L *lua.LState) int {
 		}
 	}
 
-	tc.logDebug(
-		fmt.Sprintf("HTTP request done in %s, received %d bytes with code %d",
-			delta,
-			len(bts),
-			resp.StatusCode,
-		),
+	tc.Emit(
+		TestLogEvent{
+			Level: 0,
+			Owner: tc,
+			Message: fmt.Sprintf("HTTP request done in %s, received %d bytes with code %d",
+				delta,
+				len(bts),
+				resp.StatusCode,
+			),
+		},
 	)
 
 	tc.assertDone(nil)

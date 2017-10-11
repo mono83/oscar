@@ -2,21 +2,18 @@ package oscar
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"github.com/mono83/oscar/util/rsa"
 	"github.com/yuin/gopher-lua"
-	"io"
 	"time"
 )
 
 // Oscar is main test runner
 type Oscar struct {
+	*TestContext
 	Include []string
 	Debug   bool
-	Vars    map[string]string
 
-	Output io.Writer
-	Cases  []*TestCase
+	Cases []*TestCase
 
 	CaseSelector func(*TestCase) bool
 }
@@ -37,7 +34,7 @@ func (o *Oscar) StartFile(file string) error {
 
 	if len(o.Include) > 0 {
 		for _, h := range o.Include {
-			o.tracef("Reading header %s", h)
+			o.Trace("Reading header %s", h)
 			if err := L.DoFile(h); err != nil {
 				return err
 			}
@@ -45,12 +42,12 @@ func (o *Oscar) StartFile(file string) error {
 	}
 
 	// Loading file
-	o.tracef("Reading file %s", file)
+	o.Trace("Reading file %s", file)
 	before := time.Now()
 	if err := L.DoFile(file); err != nil {
 		return err
 	}
-	o.tracef("File parsed in %.1fms", time.Now().Sub(before).Seconds()*1000)
+	o.Trace("File parsed in %.1fms", time.Now().Sub(before).Seconds()*1000)
 
 	// Running tests
 	return o.Start(L)
@@ -96,108 +93,34 @@ func (o *Oscar) InjectModule(L *lua.LState) {
 }
 
 // Start begins all tests
-func (o *Oscar) Start(L *lua.LState) (err error) {
-	o.tracef("Starting tests")
+func (o *Oscar) Start(L *lua.LState) error {
+	o.Emit(StartEvent{Time: time.Now(), Owner: o})
+	o.Trace("Starting tests")
 	for i, s := range o.Cases {
 		if o.CaseSelector == nil || o.CaseSelector(s) {
-			o.tracef("Starting test case #%d - \"%s\"", i+1, s.Name)
+			o.Trace("Starting test case #%d - \"%s\"", i+1, s.Name)
 			s.Run(L)
 		} else {
-			o.tracef("Test case %s skipped by case selector predicate", s.Name)
+			o.Trace("Test case %s skipped by case selector predicate", s.Name)
 		}
 	}
 
+	o.Emit(FinishEvent{Time: time.Now(), Owner: o})
+
+	return o.GetError()
+}
+
+// GetError returns overall total error for test runner
+func (o *Oscar) GetError() (err error) {
 	// Choosing error
 	for _, s := range o.Cases {
-		if s.CntAssertFail > 0 {
+		if s.Error != nil {
 			err = fmt.Errorf("at least one test case failure in %s", s.Name)
 			break
 		}
 	}
 
-	if err != nil {
-		// Printing error details
-		fmt.Fprintln(o.output())
-		fmt.Fprintln(o.output(), " Errors:")
-		i := 1
-		for _, s := range o.Cases {
-			if s.Error != nil {
-				fmt.Fprintf(o.output(), "  %d. %s\n", i, s.Name)
-				fmt.Fprintln(o.output(), "     ", s.Error)
-				for k, v := range s.Vars {
-					fmt.Fprintln(o.output(), "      ", k, ":=", v)
-				}
-				fmt.Fprintln(o.output())
-				i++
-			}
-		}
-		fmt.Fprintln(o.output())
-	}
-
-	// Building global aftermath
-	longest := len("Test suite")
-	for _, s := range o.Cases {
-		if s.CntAssertFail > 0 || s.CntAssertSuccess > 0 {
-			if l := len(s.Name); l > longest {
-				longest = l
-			}
-		}
-	}
-
-	namePattern := fmt.Sprintf(" %%-%ds", longest)
-	fullPattern := "%s" + namePattern + "  %5d   %5d     %5d   %7.1fms\n"
-
-	fmt.Fprintln(o.output())
-	fmt.Fprintln(o.output())
-	fmt.Fprintf(
-		o.output(),
-		"      "+namePattern+" Success  Failed  Requests  Time spent\n",
-		"Test suite",
-	)
-	fmt.Fprintln(o.output())
-
-	for _, s := range o.Cases {
-		if s.CntAssertFail > 0 || s.CntAssertSuccess > 0 {
-			status := colorOscarSummarySuccess.Sprint("  OK  ")
-			if s.CntAssertFail > 0 {
-				status = colorOscarSummaryFailed.Sprint(" FAIL ")
-			}
-
-			fmt.Fprintf(
-				o.output(),
-				fullPattern,
-				status,
-				s.Name,
-				s.CntAssertSuccess,
-				s.CntAssertFail,
-				s.CntRemote,
-				s.Elapsed().Seconds()*1000,
-			)
-		}
-	}
-
-	fmt.Fprintln(o.output())
-	fmt.Fprintln(o.output())
-
 	return
-}
-
-// Get returns variable value from vars map
-func (o *Oscar) Get(key string) string {
-	if len(o.Vars) > 0 {
-		if v, ok := o.Vars[key]; ok {
-			return v
-		}
-	}
-
-	return ""
-}
-
-// tracef output debug information (if enabled) using printf syntax
-func (o *Oscar) tracef(message string, args ...interface{}) {
-	if o.Debug {
-		fmt.Fprintf(o.output(), message+"\n", args...)
-	}
 }
 
 // lAdd registers test case from lua callback function and name
@@ -205,21 +128,19 @@ func (o *Oscar) lAdd(L *lua.LState) int {
 	name := L.CheckString(1)
 	clb := L.CheckFunction(2)
 
-	o.tracef("Registering test case %s", name)
-	o.Cases = append(o.Cases, &TestCase{Name: name, Function: clb, oscar: o})
+	o.Trace("Registering test case %s", name)
+	o.Cases = append(
+		o.Cases,
+		&TestCase{
+			Name:     name,
+			Function: clb,
+			TestContext: &TestContext{
+				Parent: o.TestContext,
+			},
+		},
+	)
 	return 0
 }
-
-func (o *Oscar) output() io.Writer {
-	if o.Output == nil {
-		return nop{}
-	}
-
-	return o.Output
-}
-
-var colorOscarSummarySuccess = color.New(color.FgHiGreen)
-var colorOscarSummaryFailed = color.New(color.FgHiRed)
 
 type nop struct {
 }

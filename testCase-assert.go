@@ -11,7 +11,7 @@ func lTestCaseAssert(L *lua.LState) int {
 	expected := tc.Interpolate(L.ToString(3))
 	doc := L.OptString(4, "")
 
-	tc.oscar.tracef(`Assert "%s" (actual, left) equals "%s"`, actual, expected)
+	tc.Trace(`Assert "%s" (actual, left) equals "%s"`, actual, expected)
 	success := actual == expected
 	if !success {
 		err := fmt.Errorf(
@@ -20,11 +20,10 @@ func lTestCaseAssert(L *lua.LState) int {
 			expected,
 			doc,
 		)
-		tc.logError(err.Error())
 		tc.assertDone(err)
 		L.RaiseError("Assertion failed")
 	} else {
-		tc.oscar.tracef(`Assertion OK. "%s" == "%s"`, actual, expected)
+		tc.Trace(`Assertion OK. "%s" == "%s"`, actual, expected)
 		tc.assertDone(nil)
 	}
 

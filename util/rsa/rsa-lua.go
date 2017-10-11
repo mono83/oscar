@@ -23,6 +23,7 @@ func RegisterType(L *lua.LState) {
 		"certificateExport64": lExportCertificateB64,
 		"signSHA256String64":  lSign256StringB64,
 		"signSHA256Int64":     lSign256BLongSliceB64,
+		"signSHA256Long64":    lSign256BLongSliceB64,
 	}))
 }
 

@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"github.com/mono83/oscar"
+	"github.com/mono83/oscar/out"
 	"github.com/spf13/cobra"
 	"gopkg.in/ini.v1"
 	"io/ioutil"
@@ -45,14 +46,25 @@ var runCmd = &cobra.Command{
 			values = sec.KeysHash()
 		}
 
-		o := &oscar.Oscar{
-			Debug: verbose,
-			Vars:  values,
+		// Building testing context
+		context := &oscar.TestContext{Vars: values}
+
+		// Building and configuring Oscar
+		d := &out.Dispatcher{}
+		o := &oscar.Oscar{TestContext: context}
+		o.OnEvent = d.OnEmit
+
+		if !quiet && verbose {
+			d.List = append(d.List, out.GetTracer(os.Stdout))
+		}
+		if !quiet {
+			d.List = append(
+				d.List,
+				out.GetAftermath(os.Stdout),
+				out.GetTestCasePrinter(os.Stdout),
+			)
 		}
 
-		if !quiet {
-			o.Output = os.Stdout
-		}
 		if len(header) > 0 {
 			o.Include = []string{header}
 		}

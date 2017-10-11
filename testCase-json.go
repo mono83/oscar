@@ -30,20 +30,15 @@ func lTestCaseAssertJSONXPath(L *lua.LState) int {
 	// Reading response body
 	body := tc.Get("http.response.body")
 
-	tc.oscar.tracef(`Reading JSON XPath "%s"`, xpath)
+	tc.Trace(`Reading JSON XPath "%s"`, xpath)
 
 	// Extracting json path
 	actual, err := jsonPath.Extract([]byte(body), xpath)
 	if err != nil {
-		tc.logError(fmt.Sprintf(
-			"Unable to parse JSON XPath %s - %s",
-			xpath,
-			err.Error(),
-		))
-		tc.assertDone(nil)
+		tc.assertDone(err)
 		L.RaiseError(err.Error())
 	} else {
-		tc.oscar.tracef(`Assert "%s" (actual, left) equals "%s"`, actual, expected)
+		tc.Trace(`Assert "%s" (actual, left) equals "%s"`, actual, expected)
 		success := actual == expected
 		if !success {
 			err := fmt.Errorf(
@@ -53,11 +48,10 @@ func lTestCaseAssertJSONXPath(L *lua.LState) int {
 				doc,
 			)
 			tc.assertDone(err)
-			tc.logError(err.Error())
 			L.RaiseError("Assertion failed")
 		} else {
 			tc.assertDone(nil)
-			tc.oscar.tracef(`Assertion OK. "%s" == "%s"`, xpath, expected)
+			tc.Trace(`Assertion OK. "%s" == "%s"`, xpath, expected)
 		}
 	}
 

@@ -8,7 +8,6 @@ o.add("Base64 encoding transformations", function(tc)
     tc:assertEquals("AAAAAAAAAAEAAAAAAAAAAv//////////", tc:packInt64ToBase64(1, 2, -1))
 end)
 
--- Registering test cases
 o.add("Simple POST with JSON", function(tc)
     tc:log("Using ${lua.engine}")
 
@@ -21,3 +20,7 @@ o.add("Simple POST with JSON", function(tc)
     tc:assertJSONXPath("$.data", "Hello, world")
 end)
 
+o.add("Failing case", function(tc)
+    tc:assertEquals("1", "1")
+    tc:assertEquals("1", "2")
+end)

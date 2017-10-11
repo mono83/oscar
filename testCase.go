@@ -3,7 +3,6 @@ package oscar
 import (
 	"fmt"
 	"github.com/yuin/gopher-lua"
-	"regexp"
 	"time"
 )
 
@@ -12,15 +11,9 @@ const TestCaseMeta = "TestCaseType"
 
 // TestCase is main holder of test steps and assertions
 type TestCase struct {
+	*TestContext
 	Name     string
 	Function *lua.LFunction
-	Vars     map[string]string
-
-	Error                                      error
-	CntAssertSuccess, CntAssertFail, CntRemote int
-	startedAt, finishedAt                      time.Time
-
-	oscar *Oscar
 }
 
 func luaToTestCase(L *lua.LState) *TestCase {
@@ -39,80 +32,35 @@ func (t *TestCase) lSelf(L *lua.LState) lua.LValue {
 	return ud
 }
 
-// Elapsed returns elapsed time
-func (t *TestCase) Elapsed() time.Duration {
-	return t.finishedAt.Sub(t.startedAt)
-}
-
-func (t *TestCase) printAftermath() {
-	delta := t.finishedAt.Sub(t.startedAt)
-	if t.CntAssertFail > 0 {
-		t.logError(fmt.Sprintf("Test case failed. Success: %d, failed %d", t.CntAssertSuccess, t.CntAssertFail))
-	} else {
-		t.logTestCase(fmt.Sprintf("Test case done in %.2f sec. Assertions: %d", delta.Seconds(), t.CntAssertSuccess))
-	}
-}
-
 // Run starts all assertions and operations within test case
 func (t *TestCase) Run(L *lua.LState) (err error) {
-	t.logTestCase("Running test case " + t.Name)
-	t.oscar.tracef("Invoking %s", t.Name)
+	t.Emit(StartEvent{Time: time.Now(), Owner: t})
+	t.Trace("Invoking %s", t.Name)
 	defer func() {
 		if r := recover(); r != nil {
-			t.oscar.tracef("Recovered panic %+v", r)
+			t.Trace("Recovered panic %+v", r)
 			err = fmt.Errorf("%+v", r)
-			t.assertDone(err)
+			if t.Error == nil {
+				t.assertDone(err)
+			} else {
+				t.Error = fmt.Errorf("%s\n%s", t.Error.Error(), err)
+			}
 		}
-
-		t.finishedAt = time.Now()
-		t.printAftermath()
 	}()
-	t.startedAt = time.Now()
 	L.Push(t.Function)
 	L.Push(t.lSelf(L))
 	L.Call(1, 0)
 
+	t.Emit(FinishEvent{Time: time.Now(), Owner: t})
 	return nil
-}
-
-// Get returns variable value from vars map
-func (t *TestCase) Get(key string) string {
-	if len(t.Vars) > 0 {
-		if v, ok := t.Vars[key]; ok {
-			return v
-		}
-	}
-
-	return t.oscar.Get(key)
-}
-
-// Set assigns new variable value
-func (t *TestCase) Set(key, value string) {
-	t.oscar.tracef(`Setting "%s" := "%s"`, key, value)
-	if len(t.Vars) == 0 {
-		t.Vars = map[string]string{}
-	}
-
-	t.Vars[key] = value
-}
-
-var iregex = regexp.MustCompile(`\${([\w.-]+)}`)
-
-// Interpolate replaces all placeholders in provided string using vars from test case or
-// global runner
-func (t *TestCase) Interpolate(value string) string {
-	return iregex.ReplaceAllStringFunc(value, func(i string) string {
-		m := iregex.FindStringSubmatch(i)
-		return t.Get(m[1])
-	})
 }
 
 // assertDone registers assert attempt
 func (t *TestCase) assertDone(err error) {
 	if err == nil {
-		t.CntAssertSuccess++
+		t.Emit(AssertionSuccess(""))
 	} else {
-		t.Error = err
-		t.CntAssertFail++
+		t.Emit(AssertionFailure(err))
+		t.Emit(FinishEvent{Time: time.Now(), Owner: t})
 	}
 }
