@@ -3,6 +3,7 @@ package oscar
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/mono83/oscar/util/rsa"
 	"github.com/yuin/gopher-lua"
 	"io"
 	"time"
@@ -72,14 +73,21 @@ func (o *Oscar) InjectModule(L *lua.LState) {
 			"jsonPath":        lJSONPathExtract,
 			"jsonXPath":       lJSONPathExtract,
 			"set":             lTestCaseSet,
-			"log":             lTestCaseDebug,
-			"info":            lTestCaseInfo,
+
+			"stringToBase64":    lTestCaseStringBase64,
+			"packInt64ToBase64": lTestCasePackInt64Base64,
+
+			"log":  lTestCaseDebug,
+			"info": lTestCaseInfo,
 		}))
 
 		// register functions to the table
 		mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 			"add": o.lAdd,
 		})
+
+		// Adding RSA module
+		rsa.RegisterType(L)
 
 		// returns the module
 		L.Push(mod)

@@ -79,6 +79,36 @@ Registers new test case with name, passes as first argument. Second arguments st
 that will be invoked on test case execution. Upon invocation, `TestCase` object will be passed to callback
 as first and only argument
 
+## RSA object
+
+RSA is helper object, used to work with RSA public/private keys and certificates.
+
+### Constructor
+
+Use `RSA.new(len)` to generate public/private key pairs with desired `len` length and TTL one hour.
+
+```lua
+local r = RSA.new(2048)
+```
+
+### Certificate export
+
+Syntax: `:exportCertificate64`
+
+Outputs certificate in PEM base64 format. 
+
+### Signatures
+
+Syntax: `:signSHA256String64(data)`
+
+Signs provided `data` using private key and `SHA256` hashing and returns base64-encoded value.
+
+Syntax: `:signSHA256Int64(int...)`
+
+Packs multiple int64 values (any amount) into one single BigEndian byte array, signs it and 
+then encodes result using Base64.
+
+
 ## TestCase object
 
 Each test case callback will automatically receive `TestCase` object as argument with following methods.
@@ -145,3 +175,16 @@ Syntax: `:jsonXPath(path, body)`
  local v = tc.jsonXPath("$.foo.bar", '{"foo":{"bar": 10}}')
  -- v = "10"
  ``` 
+ 
+ ### Codecs
+ 
+ ## Base64
+ 
+ Syntax: `:stringToBase64(value)`
+ 
+ Encodes provided string value as Base64
+ 
+ Syntax: `:packInt64ToBase64(int64...)`
+ 
+ Packs multiple int64 values (any amount) into one single BigEndian byte array and then encodes 
+ it using Base64.
