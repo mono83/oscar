@@ -11,7 +11,7 @@ import (
 func GetAftermath(stream io.Writer) func(interface{}) {
 	return func(i interface{}) {
 		if s, ok := i.(oscar.FinishEvent); ok {
-			if o, ok := s.Owner.(*oscar.Oscar); ok {
+			if o, ok := s.Owner.(*oscar.TestSuite); ok {
 				err := o.GetError()
 				if err != nil {
 					// Printing error details

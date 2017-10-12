@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// Oscar is main test runner
-type Oscar struct {
+// TestSuite is main test runner
+type TestSuite struct {
 	*TestContext
 	Include []string
 	Debug   bool
@@ -19,7 +19,7 @@ type Oscar struct {
 }
 
 // StartFile starts test cases from lua file
-func (o *Oscar) StartFile(file string) error {
+func (o *TestSuite) StartFile(file string) error {
 	L := lua.NewState()
 	defer L.Close()
 
@@ -27,7 +27,7 @@ func (o *Oscar) StartFile(file string) error {
 		o.Vars = map[string]string{}
 	}
 
-	o.Vars["lua.engine"] = "Oscar"
+	o.Vars["lua.engine"] = "TestSuite"
 
 	// Loading module
 	o.InjectModule(L)
@@ -53,8 +53,8 @@ func (o *Oscar) StartFile(file string) error {
 	return o.Start(L)
 }
 
-// InjectModule injects Oscar module (named "oscar") into lua engine
-func (o *Oscar) InjectModule(L *lua.LState) {
+// InjectModule injects TestSuite module (named "oscar") into lua engine
+func (o *TestSuite) InjectModule(L *lua.LState) {
 	L.PreloadModule("oscar", func(L *lua.LState) int {
 		// Registering test case type
 		mt := L.NewTypeMetatable(TestCaseMeta)
@@ -93,7 +93,7 @@ func (o *Oscar) InjectModule(L *lua.LState) {
 }
 
 // Start begins all tests
-func (o *Oscar) Start(L *lua.LState) error {
+func (o *TestSuite) Start(L *lua.LState) error {
 	o.Emit(StartEvent{Time: time.Now(), Owner: o})
 	o.Trace("Starting tests")
 	for i, s := range o.Cases {
@@ -111,7 +111,7 @@ func (o *Oscar) Start(L *lua.LState) error {
 }
 
 // GetError returns overall total error for test runner
-func (o *Oscar) GetError() (err error) {
+func (o *TestSuite) GetError() (err error) {
 	// Choosing error
 	for _, s := range o.Cases {
 		if s.Error != nil {
@@ -124,7 +124,7 @@ func (o *Oscar) GetError() (err error) {
 }
 
 // lAdd registers test case from lua callback function and name
-func (o *Oscar) lAdd(L *lua.LState) int {
+func (o *TestSuite) lAdd(L *lua.LState) int {
 	name := L.CheckString(1)
 	clb := L.CheckFunction(2)
 

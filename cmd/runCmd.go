@@ -21,8 +21,8 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Runs tests from lua file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return errors.New("one lua file must be supplied")
+		if len(args) < 1 {
+			return errors.New("at least one lua file must be supplied")
 		}
 
 		values := map[string]string{}
@@ -49,44 +49,58 @@ var runCmd = &cobra.Command{
 		// Building testing context
 		context := &oscar.TestContext{Vars: values}
 
-		// Building and configuring Oscar
-		d := &out.Dispatcher{}
-		o := &oscar.Oscar{TestContext: context}
-		o.OnEvent = d.OnEmit
-
-		if !quiet && verbose {
-			d.List = append(d.List, out.GetTracer(os.Stdout))
-		}
-		if !quiet {
-			d.List = append(
-				d.List,
-				out.GetAftermath(os.Stdout),
-				out.GetTestCasePrinter(os.Stdout),
-			)
-		}
-
-		if len(header) > 0 {
-			o.Include = []string{header}
-		}
-
-		if len(filter) > 0 {
-			nameMatcher, err := regexp.Compile("(?i)" + filter)
-			if err != nil {
-				return err
+		// Building and configuring Oscars
+		oscars := []*oscar.TestSuite{}
+		for range args {
+			d := &out.Dispatcher{}
+			o := &oscar.TestSuite{
+				TestContext: &oscar.TestContext{
+					Parent: context,
+				},
 			}
-			o.CaseSelector = func(testCase *oscar.TestCase) bool {
-				return nameMatcher.MatchString(testCase.Name)
+			o.OnEvent = d.OnEmit
+
+			if !quiet && verbose {
+				d.List = append(d.List, out.GetTracer(os.Stdout))
 			}
+			if !quiet {
+				d.List = append(
+					d.List,
+					out.GetAftermath(os.Stdout),
+					out.GetTestCasePrinter(os.Stdout),
+				)
+			}
+
+			if len(header) > 0 {
+				o.Include = []string{header}
+			}
+
+			if len(filter) > 0 {
+				nameMatcher, err := regexp.Compile("(?i)" + filter)
+				if err != nil {
+					return err
+				}
+				o.CaseSelector = func(testCase *oscar.TestCase) bool {
+					return nameMatcher.MatchString(testCase.Name)
+				}
+			}
+
+			oscars = append(oscars, o)
 		}
 
-		return o.StartFile(args[0])
+		// Running all oscars
+		for i, luaFile := range args {
+			oscars[i].StartFile(luaFile)
+		}
+
+		return nil
 	},
 }
 
 func init() {
 	runCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Verbose (debug) mode")
 	runCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "Suppress any output")
-	runCmd.Flags().StringVarP(&environmentFile, "env", "e", "", "Root variables, passed to Oscar")
+	runCmd.Flags().StringVarP(&environmentFile, "env", "e", "", "Root variables, passed to TestSuite")
 	runCmd.Flags().StringVarP(&filter, "filter", "f", "", "Test case name filter, regex")
 	runCmd.Flags().StringVarP(&header, "lib", "l", "", "Add library lua file with helper functions")
 }
