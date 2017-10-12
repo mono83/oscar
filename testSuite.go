@@ -11,7 +11,6 @@ import (
 type TestSuite struct {
 	*TestContext
 	Include []string
-	Debug   bool
 
 	Cases []*TestCase
 

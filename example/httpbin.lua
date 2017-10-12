@@ -1,13 +1,6 @@
 -- Loading Oscar module
 local o = require("oscar")
 
-o.add("Base64 encoding transformations", function(tc)
-    tc:set("value", "Hello, world")
-    tc:assertEquals("SGVsbG8sIHdvcmxk", tc:stringToBase64("${value}"))
-
-    tc:assertEquals("AAAAAAAAAAEAAAAAAAAAAv//////////", tc:packInt64ToBase64(1, 2, -1))
-end)
-
 o.add("Simple POST with JSON", function(tc)
     tc:log("Using ${lua.engine}")
 
@@ -18,9 +11,4 @@ o.add("Simple POST with JSON", function(tc)
     tc:assertEquals("${http.response.code}", "200")
     tc:assertEquals("${http.response.header.Access-Control-Allow-Credentials}", "true")
     tc:assertJSONXPath("$.data", "Hello, world")
-end)
-
-o.add("Failing case", function(tc)
-    tc:assertEquals("1", "1")
-    tc:assertEquals("1", "2")
 end)

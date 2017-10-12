@@ -8,7 +8,6 @@ import (
 	"gopkg.in/ini.v1"
 	"io/ioutil"
 	"os"
-	"regexp"
 )
 
 var verbose bool
@@ -48,52 +47,31 @@ var runCmd = &cobra.Command{
 
 		// Building testing context
 		context := &oscar.TestContext{Vars: values}
+		d := &out.Dispatcher{}
+		if !quiet && verbose {
+			d.List = append(d.List, out.GetTracer(os.Stdout))
+		}
+		if !quiet {
+			d.List = append(
+				d.List,
+				out.GetAftermath(os.Stdout),
+				out.GetTestCasePrinter(os.Stdout),
+			)
+		}
+		context.OnEvent = d.OnEvent
 
-		// Building and configuring Oscars
-		oscars := []*oscar.TestSuite{}
-		for range args {
-			d := &out.Dispatcher{}
-			o := &oscar.TestSuite{
-				TestContext: &oscar.TestContext{
-					Parent: context,
-				},
+		// Building Oscar runner
+		o := &oscar.Oscar{
+			TestContext: context,
+		}
+		for _, luaFile := range args {
+			if err := o.AddTestSuiteFile(luaFile, header, filter); err != nil {
+				return err
 			}
-			o.OnEvent = d.OnEmit
-
-			if !quiet && verbose {
-				d.List = append(d.List, out.GetTracer(os.Stdout))
-			}
-			if !quiet {
-				d.List = append(
-					d.List,
-					out.GetAftermath(os.Stdout),
-					out.GetTestCasePrinter(os.Stdout),
-				)
-			}
-
-			if len(header) > 0 {
-				o.Include = []string{header}
-			}
-
-			if len(filter) > 0 {
-				nameMatcher, err := regexp.Compile("(?i)" + filter)
-				if err != nil {
-					return err
-				}
-				o.CaseSelector = func(testCase *oscar.TestCase) bool {
-					return nameMatcher.MatchString(testCase.Name)
-				}
-			}
-
-			oscars = append(oscars, o)
 		}
 
-		// Running all oscars
-		for i, luaFile := range args {
-			oscars[i].StartFile(luaFile)
-		}
-
-		return nil
+		// Starting
+		return o.Start()
 	},
 }
 
