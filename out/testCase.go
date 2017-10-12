@@ -13,7 +13,11 @@ func GetTestCasePrinter(stream io.Writer) func(interface{}) {
 	return func(i interface{}) {
 		if s, ok := i.(oscar.StartEvent); ok {
 			if t, ok := s.Owner.(*oscar.TestCase); ok {
-				print(stream, t, "Running test case "+t.Name, colorLogTestCase)
+				if t.Name == oscar.InitFuncName {
+					print(stream, t, "Running test case initialization func", colorLogTestCase)
+				} else {
+					print(stream, t, "Running test case "+t.Name, colorLogTestCase)
+				}
 			}
 		} else if s, ok := i.(oscar.FinishEvent); ok {
 			if t, ok := s.Owner.(*oscar.TestCase); ok {

@@ -7,11 +7,15 @@ import (
 	"time"
 )
 
+// InitFuncName constant contains name for init(set up) test case
+var InitFuncName = "__init__"
+
 // TestSuite is main test runner
 type TestSuite struct {
 	*TestContext
 	Include []string
 
+	Init  *TestCase
 	Cases []*TestCase
 
 	CaseSelector func(*TestCase) bool
@@ -79,7 +83,9 @@ func (o *TestSuite) InjectModule(L *lua.LState) {
 
 		// register functions to the table
 		mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-			"add": o.lAdd,
+			"add":   o.lAdd,
+			"init":  o.lInit,
+			"setUp": o.lInit,
 		})
 
 		// Adding RSA module
@@ -95,6 +101,14 @@ func (o *TestSuite) InjectModule(L *lua.LState) {
 func (o *TestSuite) Start(L *lua.LState) error {
 	o.Emit(StartEvent{Time: time.Now(), Owner: o})
 	o.Trace("Starting tests")
+	if o.Init != nil {
+		o.Trace("Running Init")
+		fmt.Println("Running init")
+		if err := o.Init.Run(L); err != nil {
+			return err
+		}
+	}
+
 	for i, s := range o.Cases {
 		if o.CaseSelector == nil || o.CaseSelector(s) {
 			o.Trace("Starting test case #%d - \"%s\"", i+1, s.Name)
@@ -109,10 +123,19 @@ func (o *TestSuite) Start(L *lua.LState) error {
 	return o.GetError()
 }
 
+// GetCases returns test cases slice, including initialization one
+func (o *TestSuite) GetCases() []*TestCase {
+	if o.Init == nil {
+		return o.Cases
+	}
+
+	return append([]*TestCase{o.Init}, o.Cases...)
+}
+
 // GetError returns overall total error for test runner
 func (o *TestSuite) GetError() (err error) {
 	// Choosing error
-	for _, s := range o.Cases {
+	for _, s := range o.GetCases() {
 		if s.Error != nil {
 			err = fmt.Errorf("at least one test case failure in %s", s.Name)
 			break
@@ -120,6 +143,21 @@ func (o *TestSuite) GetError() (err error) {
 	}
 
 	return
+}
+
+// lInit registers init (setUp) function
+func (o *TestSuite) lInit(L *lua.LState) int {
+	clb := L.CheckFunction(1)
+
+	o.Trace("Registering init func %s", InitFuncName)
+	o.Init = &TestCase{
+		Name:     InitFuncName,
+		Function: clb,
+		TestContext: &TestContext{
+			Parent: o.TestContext,
+		},
+	}
+	return 0
 }
 
 // lAdd registers test case from lua callback function and name

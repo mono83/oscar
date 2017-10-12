@@ -73,6 +73,11 @@ or during variable interpolation process.
 
 ## Module-level functions 
 
+### `init(function)`
+
+Registers initialization (setUp) functions, that will be invoked only once for whole file. This 
+function can contain heavy reusable calculations and environment establishment.
+
 ### `add(name, function)`
 
 Registers new test case with name, passes as first argument. Second arguments stands for callback function,

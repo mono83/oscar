@@ -92,7 +92,7 @@ func (o Oscar) GetError() error { return o.err }
 // IterateResults iterates over all test cases, passing results to provided callback
 func (o Oscar) IterateResults(f func(string, int, int, int, time.Duration)) {
 	for i, ts := range o.Suits {
-		for _, tc := range ts.Cases {
+		for _, tc := range ts.GetCases() {
 			cntErr := 0
 			if tc.Error != nil {
 				cntErr = 1
@@ -109,7 +109,7 @@ func (o Oscar) IterateErrors(f func(*TestContext, string, error)) {
 			continue
 		}
 
-		for _, tc := range ts.Cases {
+		for _, tc := range ts.GetCases() {
 			if tc.Error != nil {
 				f(tc.TestContext, o.prefix(i)+tc.Name, tc.Error)
 			}
