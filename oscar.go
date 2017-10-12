@@ -59,6 +59,7 @@ func (o *Oscar) Start() error {
 			TestContext: &TestContext{
 				Parent: o.TestContext,
 			},
+			CaseSelector: def.CaseSelector,
 		}
 		if len(def.Header) > 0 {
 			o.Suits[i].Include = []string{def.Header}
