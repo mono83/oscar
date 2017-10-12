@@ -98,6 +98,9 @@ func (o Oscar) IterateResults(f func(string, int, int, int, time.Duration)) {
 			if tc.Error != nil {
 				cntErr = 1
 			}
+			if cntErr == 0 && tc.CountAssertSuccess == 0 {
+				continue
+			}
 			f(o.prefix(i)+tc.Name, tc.CountAssertSuccess, cntErr, tc.CountRemoteRequests, tc.Elapsed())
 		}
 	}
