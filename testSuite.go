@@ -74,6 +74,9 @@ func (o *TestSuite) InjectModule(L *lua.LState) {
 			"jsonXPath":       lJSONPathExtract,
 			"set":             lTestCaseSet,
 
+			"unix":  lUnix,
+			"sleep": lSleep,
+
 			"stringToBase64":    lTestCaseStringBase64,
 			"packInt64ToBase64": lTestCasePackInt64Base64,
 
@@ -85,6 +88,7 @@ func (o *TestSuite) InjectModule(L *lua.LState) {
 		mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 			"add":   o.lAdd,
 			"init":  o.lInit,
+			"unix":  lUnix,
 			"setUp": o.lInit,
 		})
 

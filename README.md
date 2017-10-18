@@ -174,12 +174,22 @@ Performs HTTP request and writes response data into variables.
 
 Syntax: `:jsonXPath(path, body)`
          
- Invokes JSON XPath query from `path` on `body` and returns invocation result. Interpolation also works
+Invokes JSON XPath query from `path` on `body` and returns invocation result. Interpolation also works
  
  ```lua
  local v = tc.jsonXPath("$.foo.bar", '{"foo":{"bar": 10}}')
  -- v = "10"
  ``` 
+ 
+ ### Time
+ 
+ Syntax: `:unix()`
+ 
+ Returns current Unix timestamp, in seconds
+ 
+ Syntax: `:sleep(millis)`
+ 
+ Pauses invocation for requested amount of milliseconds
  
  ### Codecs
  
