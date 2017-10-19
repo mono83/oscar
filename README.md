@@ -1,5 +1,8 @@
 # Oscar
 
+[![GitHub (pre-)release](https://img.shields.io/github/release/mono83/oscar/all.svg)](https://github.com/mono83/oscar/releases)
+[![Docker Automated buil](https://img.shields.io/docker/automated/mono83/oscar.svg)](https://hub.docker.com/r/mono83/oscar/)
+
 Toolset to run functional tests, written in [Lua](https://www.lua.org/).
 
 
