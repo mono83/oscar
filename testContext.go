@@ -16,6 +16,8 @@ type TestContext struct {
 	CountAssertSuccess  int
 	CountRemoteRequests int
 
+	elapsedHTTP, elapsedSleep time.Duration
+
 	OnFinish func(*TestContext) error
 	OnEvent  func(interface{})
 
@@ -58,8 +60,11 @@ func (t *TestContext) Interpolate(value string) string {
 }
 
 // Elapsed returns elapsed time
-func (t *TestContext) Elapsed() time.Duration {
-	return t.finishedAt.Sub(t.startedAt)
+func (t *TestContext) Elapsed() (total time.Duration, http time.Duration, sleep time.Duration) {
+	total = t.finishedAt.Sub(t.startedAt)
+	http = t.elapsedHTTP
+	sleep = t.elapsedSleep
+	return
 }
 
 // Emit publishes new event into nested test context
@@ -76,8 +81,11 @@ func (t *TestContext) Emit(event interface{}) {
 		if t.Error == nil {
 			t.Error = a
 		}
-	} else if _, ok := event.(RemoteRequestEvent); ok {
+	} else if r, ok := event.(RemoteRequestEvent); ok {
 		t.CountRemoteRequests++
+		t.elapsedHTTP += r.Elapsed
+	} else if s, ok := event.(SleepEvent); ok {
+		t.elapsedSleep += time.Duration(s)
 	}
 
 	if t.OnEvent != nil {
@@ -120,6 +128,9 @@ type RemoteRequestEvent struct {
 	Elapsed time.Duration
 	Success bool
 }
+
+// SleepEvent is emitted on every sleep
+type SleepEvent time.Duration
 
 // AssertionSuccess is TestContext event, emitted on every success assertion
 type AssertionSuccess string

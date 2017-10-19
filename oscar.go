@@ -91,7 +91,7 @@ func (o Oscar) prefix(i int) string {
 func (o Oscar) GetError() error { return o.err }
 
 // IterateResults iterates over all test cases, passing results to provided callback
-func (o Oscar) IterateResults(f func(string, int, int, int, time.Duration)) {
+func (o Oscar) IterateResults(f func(string, int, int, int, time.Duration, time.Duration, time.Duration)) {
 	for i, ts := range o.Suits {
 		for _, tc := range ts.GetCases() {
 			cntErr := 0
@@ -101,7 +101,17 @@ func (o Oscar) IterateResults(f func(string, int, int, int, time.Duration)) {
 			if cntErr == 0 && tc.CountAssertSuccess == 0 {
 				continue
 			}
-			f(o.prefix(i)+tc.Name, tc.CountAssertSuccess, cntErr, tc.CountRemoteRequests, tc.Elapsed())
+			elapsedTotal, elapsedHTTP, elapsedSleep := tc.Elapsed()
+
+			f(
+				o.prefix(i)+tc.Name,
+				tc.CountAssertSuccess,
+				cntErr,
+				tc.CountRemoteRequests,
+				elapsedTotal,
+				elapsedHTTP,
+				elapsedSleep,
+			)
 		}
 	}
 }

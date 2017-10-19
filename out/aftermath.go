@@ -34,25 +34,25 @@ func GetAftermath(stream io.Writer) func(interface{}) {
 
 				// Building global aftermath
 				longest := len("Test suite")
-				o.IterateResults(func(name string, success int, err int, remote int, elapsed time.Duration) {
+				o.IterateResults(func(name string, success int, err int, remote int, elapsedTotal time.Duration, elapsedHTTP time.Duration, elapsedSleep time.Duration) {
 					if l := len(name); l > longest {
 						longest = l
 					}
 				})
 
 				namePattern := fmt.Sprintf(" %%-%ds", longest)
-				fullPattern := "%s" + namePattern + "  %5d   %5d     %5d   %7.1fms\n"
+				fullPattern := "%s" + namePattern + "  %5d   %5d     %5d   %7.1fms  %7.1fms  %7.1fms\n"
 
 				fmt.Fprintln(stream)
 				fmt.Fprintln(stream)
 				fmt.Fprintf(
 					stream,
-					"      "+namePattern+" Success  Failed  Requests  Time spent\n",
+					"      "+namePattern+" Success  Failed  Requests  Total time     HTTP       Sleep\n",
 					"Test suite",
 				)
 				fmt.Fprintln(stream)
 
-				o.IterateResults(func(name string, success int, err int, remote int, elapsed time.Duration) {
+				o.IterateResults(func(name string, success int, err int, remote int, elapsedTotal time.Duration, elapsedHTTP time.Duration, elapsedSleep time.Duration) {
 					status := colorOscarSummarySuccess.Sprint("  OK  ")
 					if err > 0 {
 						status = colorOscarSummaryFailed.Sprint(" FAIL ")
@@ -66,7 +66,9 @@ func GetAftermath(stream io.Writer) func(interface{}) {
 						success,
 						err,
 						remote,
-						elapsed.Seconds()*1000,
+						elapsedTotal.Seconds()*1000,
+						elapsedHTTP.Seconds()*1000,
+						elapsedSleep.Seconds()*1000,
 					)
 				})
 

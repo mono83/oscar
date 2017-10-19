@@ -15,8 +15,10 @@ func lUnix(L *lua.LState) int {
 func lSleep(L *lua.LState) int {
 	tc := luaToTestCase(L)
 	milliseconds := L.ToInt(2)
+	duration := time.Millisecond * time.Duration(milliseconds)
 	tc.Trace("Sleeping for %d milliseconds", milliseconds)
-	time.Sleep(time.Millisecond * time.Duration(milliseconds))
+	time.Sleep(duration)
+	tc.Emit(SleepEvent(duration))
 
 	return 0
 }

@@ -24,7 +24,8 @@ func GetTestCasePrinter(stream io.Writer) func(interface{}) {
 				if t.Error != nil {
 					print(stream, t, fmt.Sprintf("Test case failed. Success: %d, failed 1", t.CountAssertSuccess), colorLogError)
 				} else {
-					print(stream, t, fmt.Sprintf("Test case done in %.2f sec. Assertions: %d", t.Elapsed().Seconds(), t.CountAssertSuccess), colorLogTestCase)
+					elapsed, _, _ := t.Elapsed()
+					print(stream, t, fmt.Sprintf("Test case done in %.2f sec. Assertions: %d", elapsed.Seconds(), t.CountAssertSuccess), colorLogTestCase)
 				}
 			}
 		} else if e, ok := i.(oscar.TestLogEvent); ok {
