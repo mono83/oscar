@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/fatih/color"
 	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/out"
 	"github.com/spf13/cobra"
@@ -12,6 +13,7 @@ import (
 
 var verbose bool
 var quiet bool
+var noAnsi bool
 var environmentFile string
 var filter string
 var header string
@@ -59,6 +61,7 @@ var runCmd = &cobra.Command{
 			)
 		}
 		context.OnEvent = d.OnEvent
+		color.NoColor = noAnsi
 
 		// Building Oscar runner
 		o := &oscar.Oscar{
@@ -78,6 +81,7 @@ var runCmd = &cobra.Command{
 func init() {
 	runCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Verbose (debug) mode")
 	runCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "Suppress any output")
+	runCmd.Flags().BoolVar(&noAnsi, "no-ansi", false, "Disable ANSI color output")
 	runCmd.Flags().StringVarP(&environmentFile, "env", "e", "", "Root variables, passed to TestSuite")
 	runCmd.Flags().StringVarP(&filter, "filter", "f", "", "Test case name filter, regex")
 	runCmd.Flags().StringVarP(&header, "lib", "l", "", "Add library lua file with helper functions")
