@@ -1,10 +1,11 @@
 package jsonEncoder
 
 import (
-	"github.com/yuin/gopher-lua"
 	"encoding/json"
+	"github.com/yuin/gopher-lua"
 )
 
+// RegisterType defines JSON module
 func RegisterType(L *lua.LState) {
 	mt := L.NewTypeMetatable("JSONWrapper")
 
@@ -13,6 +14,7 @@ func RegisterType(L *lua.LState) {
 	L.SetField(mt, "encode", L.NewFunction(lEncode))
 }
 
+// lDecode decodes json data
 func lDecode(L *lua.LState) int {
 	str := L.CheckString(1)
 
@@ -27,6 +29,7 @@ func lDecode(L *lua.LState) int {
 	return 1
 }
 
+// lEncode encodes value to json
 func lEncode(L *lua.LState) int {
 	value := L.CheckAny(1)
 

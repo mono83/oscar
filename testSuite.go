@@ -2,10 +2,10 @@ package oscar
 
 import (
 	"fmt"
+	"github.com/mono83/oscar/util/jsonEncoder"
 	"github.com/mono83/oscar/util/rsa"
 	"github.com/yuin/gopher-lua"
 	"time"
-	"github.com/mono83/oscar/util/jsonEncoder"
 )
 
 // InitFuncName constant contains name for init(set up) test case

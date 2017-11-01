@@ -1,19 +1,21 @@
 package jsonEncoder
 
 import (
-	"github.com/yuin/gopher-lua"
 	"encoding/json"
 	"errors"
+	"github.com/yuin/gopher-lua"
 )
 
 type jsonValue struct {
 	lua.LValue
 }
 
+// MarshalJSON marshal themselves into JSON
 func (j jsonValue) MarshalJSON() ([]byte, error) {
 	return toJSON(j.LValue)
 }
 
+// toJSON marshal into JSON
 func toJSON(value lua.LValue) (data []byte, err error) {
 	switch converted := value.(type) {
 	case lua.LBool, lua.LString, lua.LNumber, *lua.LNilType:
@@ -56,6 +58,7 @@ func toJSON(value lua.LValue) (data []byte, err error) {
 	return
 }
 
+// fromJSON unmarshal data
 func fromJSON(L *lua.LState, value interface{}) lua.LValue {
 	switch converted := value.(type) {
 	case bool:
