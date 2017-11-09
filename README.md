@@ -180,7 +180,7 @@ Syntax: `:jsonXPath(path, body)`
 Invokes JSON XPath query from `path` on `body` and returns invocation result. Interpolation also works
  
  ```lua
- local v = tc.jsonXPath("$.foo.bar", '{"foo":{"bar": 10}}')
+ local v = tc:jsonXPath("$.foo.bar", '{"foo":{"bar": 10}}')
  -- v = "10"
  ``` 
  
