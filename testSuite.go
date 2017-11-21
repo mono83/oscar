@@ -2,6 +2,7 @@ package oscar
 
 import (
 	"fmt"
+	"github.com/mono83/oscar/util/jsonEncoder"
 	"github.com/mono83/oscar/util/rsa"
 	"github.com/yuin/gopher-lua"
 	"time"
@@ -98,6 +99,9 @@ func (o *TestSuite) InjectModule(L *lua.LState) {
 
 		// Adding RSA module
 		rsa.RegisterType(L)
+
+		// Adding JSON module
+		jsonEncoder.RegisterType(L)
 
 		// returns the module
 		L.Push(mod)
