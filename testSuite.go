@@ -15,8 +15,9 @@ type TestSuite struct {
 	*TestContext
 	Include []string
 
-	Init  *TestCase
-	Cases []*TestCase
+	Init        *TestCase
+	Cases       []*TestCase
+	InitContext *TestContext
 
 	CaseSelector func(*TestCase) bool
 }
@@ -31,6 +32,9 @@ func (o *TestSuite) StartFile(file string) error {
 	}
 
 	o.Vars["lua.engine"] = "TestSuite"
+
+	// Injecting initial context
+	o.InitContext = &TestContext{Parent: o.TestContext}
 
 	// Loading module
 	o.InjectModule(L)
@@ -155,11 +159,9 @@ func (o *TestSuite) lInit(L *lua.LState) int {
 
 	o.Trace("Registering init func %s", InitFuncName)
 	o.Init = &TestCase{
-		Name:     InitFuncName,
-		Function: clb,
-		TestContext: &TestContext{
-			Parent: o.TestContext,
-		},
+		Name:        InitFuncName,
+		Function:    clb,
+		TestContext: o.InitContext,
 	}
 	return 0
 }
@@ -176,7 +178,7 @@ func (o *TestSuite) lAdd(L *lua.LState) int {
 			Name:     name,
 			Function: clb,
 			TestContext: &TestContext{
-				Parent: o.TestContext,
+				Parent: o.InitContext,
 			},
 		},
 	)
