@@ -13,7 +13,7 @@ func TestExtract(t *testing.T) {
 		assert.Equal("10", result)
 	}
 
-	if result, err := Extract([]byte(source), `$["id"]`); assert.NoError(err) {
+	if result, err := Extract([]byte(source), `$[id]`); assert.NoError(err) {
 		assert.Equal("10", result)
 	}
 

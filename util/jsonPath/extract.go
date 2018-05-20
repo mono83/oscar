@@ -1,74 +1,38 @@
 package jsonPath
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/NodePrime/jsonpath"
+	"github.com/yalp/jsonpath"
 )
 
 // Extract extracts data from JSON bytes, matched by JSON path
 func Extract(data []byte, path string) (string, error) {
-	// Resolving paths
-	paths, err := jsonpath.ParsePaths(path)
+	var iface interface{}
+	err := json.Unmarshal(data, &iface)
 	if err != nil {
 		return "", err
 	}
-
-	// Searching within provided data
-	eval, err := jsonpath.EvalPathsInBytes(data, paths)
+	response, err := jsonpath.Read(iface, path)
 	if err != nil {
-		return "", err
+		return "", filterError(err)
 	}
 
-	// Unmarshal JSON into interface
-	var ii interface{}
-	d := json.NewDecoder(bytes.NewReader(data))
-	d.UseNumber()
-	if err = d.Decode(&ii); err != nil {
-		return "", err
-	}
-
-	for {
-		if result, ok := eval.Next(); ok {
-			if value := seek(ii, result.Keys); len(value) > 0 {
-				return value, nil
-			}
-		} else {
-			break
-		}
-	}
-
-	return "", nil
+	return fmt.Sprint(response), nil
 }
 
-// seek searches for path value
-func seek(data interface{}, keys []interface{}) string {
-	if len(keys) == 0 {
-		return fmt.Sprintf("%v", data) // Empty keys
+// filterError filters errors, emitted by yalp/jsonpath library
+func filterError(err error) error {
+	msg := err.Error()
+	var str string
+	var num int
+	if n, _ := fmt.Sscanf(msg, "out of bound array access at %d", &num); n == 1 {
+		return nil
+	} else if n, _ := fmt.Sscanf(msg, "no key '%s' for object at %d", &str, &num); n == 1 {
+		return nil
+	} else if n, _ := fmt.Sscanf(msg, "child '%s' not found in JSON object at %d", &str, &num); n == 1 {
+		return nil
 	}
-	k := keys[0]
-	switch k.(type) {
-	case int:
-		// Slice
-		index := k.(int)
-		if slc, ok := data.([]interface{}); ok {
-			if index >= len(slc) {
-				return "" // Index out of range
-			}
 
-			return seek(slc[index], keys[1:])
-		}
-		return "" // Not a slice
-	default:
-		// Map
-		mapKey := fmt.Sprintf("%q", k)
-		mapKey = mapKey[1 : len(mapKey)-1]
-		if mp, ok := data.(map[string]interface{}); ok {
-			if mapValue, ok := mp[mapKey]; ok {
-				return seek(mapValue, keys[1:])
-			}
-		}
-		return ""
-	}
+	return err
 }
