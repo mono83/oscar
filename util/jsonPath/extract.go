@@ -4,15 +4,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/yalp/jsonpath"
+	"bytes"
 )
 
 // Extract extracts data from JSON bytes, matched by JSON path
 func Extract(data []byte, path string) (string, error) {
 	var iface interface{}
-	err := json.Unmarshal(data, &iface)
-	if err != nil {
+
+	d := json.NewDecoder(bytes.NewBuffer(data))
+	d.UseNumber()
+
+	if err := d.Decode(&iface); err != nil {
 		return "", err
 	}
+
 	response, err := jsonpath.Read(iface, path)
 	if err != nil {
 		return "", filterError(err)
