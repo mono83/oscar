@@ -1,10 +1,10 @@
 package jsonPath
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/yalp/jsonpath"
-	"bytes"
 )
 
 // Extract extracts data from JSON bytes, matched by JSON path

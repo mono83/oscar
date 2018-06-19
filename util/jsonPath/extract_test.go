@@ -41,3 +41,21 @@ func TestExtract(t *testing.T) {
 		assert.Equal("", result)
 	}
 }
+
+func TestExtractLongInt(t *testing.T) {
+	assert := assert.New(t)
+	source := `{"id": 1060000000001000003}`
+
+	if result, err := Extract([]byte(source), "$.id"); assert.NoError(err) {
+		assert.Equal("1060000000001000003", result)
+	}
+}
+
+func TestExtractLongFloat(t *testing.T) {
+	assert := assert.New(t)
+	source := `{"id": 1060000000001000003.00001}`
+
+	if result, err := Extract([]byte(source), "$.id"); assert.NoError(err) {
+		assert.Equal("1060000000001000003.00001", result)
+	}
+}
