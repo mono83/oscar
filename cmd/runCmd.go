@@ -12,6 +12,7 @@ import (
 )
 
 var verbose bool
+var veryVerbose bool
 var quiet bool
 var noAnsi bool
 var environmentFile string
@@ -50,14 +51,14 @@ var runCmd = &cobra.Command{
 		// Building testing context
 		context := &oscar.TestContext{Vars: values}
 		d := &out.Dispatcher{}
-		if !quiet && verbose {
+		if !quiet && (verbose || veryVerbose) {
 			d.List = append(d.List, out.GetTracer(os.Stdout))
 		}
 		if !quiet {
 			d.List = append(
 				d.List,
 				out.GetAftermath(os.Stdout),
-				out.GetTestCasePrinter(os.Stdout),
+				out.GetTestCasePrinter(os.Stdout, veryVerbose),
 			)
 		}
 		context.OnEvent = d.OnEvent
@@ -80,6 +81,7 @@ var runCmd = &cobra.Command{
 
 func init() {
 	runCmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Verbose (debug) mode")
+	runCmd.Flags().BoolVar(&veryVerbose, "vv", false, "Even more verbose mode")
 	runCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "Suppress any output")
 	runCmd.Flags().BoolVar(&noAnsi, "no-ansi", false, "Disable ANSI color output")
 	runCmd.Flags().StringVarP(&environmentFile, "env", "e", "", "Root variables, passed to TestSuite")

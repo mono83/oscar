@@ -40,11 +40,18 @@ func (t *TestContext) Get(key string) string {
 
 // Set assigns new variable value
 func (t *TestContext) Set(key, value string) {
-	t.Trace(`Setting "%s" := "%s"`, key, value)
-	if len(t.Vars) == 0 {
-		t.Vars = map[string]string{}
+	e := SetVarEvent{
+		Key:   key,
+		Value: value,
 	}
 
+	if len(t.Vars) == 0 {
+		t.Vars = map[string]string{}
+	} else if prev, ok := t.Vars[key]; ok {
+		e.Previous = &prev
+	}
+
+	t.Emit(e)
 	t.Vars[key] = value
 }
 

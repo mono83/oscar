@@ -5,6 +5,13 @@ import "time"
 // TraceEvent is TestContext event for tracing purposes
 type TraceEvent string
 
+// SetVarEvent is TestContext event, emitted when variables changes it's value
+type SetVarEvent struct {
+	Key      string
+	Value    string
+	Previous *string
+}
+
 // StartEvent is TestContext event, emitted when something is started
 type StartEvent struct {
 	Owner interface{}

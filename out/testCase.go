@@ -9,7 +9,7 @@ import (
 )
 
 // GetTestCasePrinter returns events receiver, used to print test case flow
-func GetTestCasePrinter(stream io.Writer) func(interface{}) {
+func GetTestCasePrinter(stream io.Writer, showSetValue bool) func(interface{}) {
 	return func(i interface{}) {
 		if s, ok := i.(oscar.StartEvent); ok {
 			if t, ok := s.Owner.(*oscar.TestCase); ok {
@@ -34,6 +34,23 @@ func GetTestCasePrinter(stream io.Writer) func(interface{}) {
 				c = colorLogInfo
 			}
 			print(stream, e.Owner, e.Message, c)
+		} else if s, ok := i.(oscar.SetVarEvent); ok && showSetValue {
+			prev := ""
+			if s.Previous != nil && *s.Previous != s.Value {
+				prev = " previous value was " + *s.Previous
+			}
+
+			fmt.Fprintf(
+				stream,
+				"%s %s\n",
+				colorLogTime.Sprint(time.Now().Format("15:04:05")),
+				colorLogDebug.Sprintf(
+					"Setting %s := %s%s",
+					s.Key,
+					s.Value,
+					prev,
+				),
+			)
 		}
 	}
 }
