@@ -3,7 +3,7 @@ package out
 import (
 	"fmt"
 	"github.com/fatih/color"
-	"github.com/mono83/oscar"
+	"github.com/mono83/oscar/core/events"
 	"io"
 	"time"
 )
@@ -11,46 +11,39 @@ import (
 // GetTestCasePrinter returns events receiver, used to print test case flow
 func GetTestCasePrinter(stream io.Writer, showSetValue bool) func(interface{}) {
 	return func(i interface{}) {
-		if s, ok := i.(oscar.StartEvent); ok {
-			if t, ok := s.Owner.(*oscar.TestCase); ok {
-				if t.Name == oscar.InitFuncName {
-					print(stream, t, "Running test case initialization func", colorLogTestCase)
-				} else {
-					print(stream, t, "Running test case "+t.Name, colorLogTestCase)
-				}
+		if s, ok := i.(events.Start); ok {
+			print(
+				stream,
+				fmt.Sprintf("Starting %s %s", s.Type, s.Name),
+				colorLogTestCase,
+			)
+		} else if s, ok := i.(events.Finish); ok {
+			if s.Error == nil {
+				print(
+					stream,
+					fmt.Sprintf("Sucessfully finished %s %s", s.Type, s.Name),
+					colorLogTestCase,
+				)
+			} else {
+				print(
+					stream,
+					fmt.Sprintf("%s %s completed with error", s.Type, s.Name),
+					colorLogError,
+				)
 			}
-		} else if s, ok := i.(oscar.FinishEvent); ok {
-			if t, ok := s.Owner.(*oscar.TestCase); ok {
-				if t.Error != nil {
-					print(stream, t, fmt.Sprintf("Test case failed. Success: %d, failed 1", t.CountAssertSuccess), colorLogError)
-				} else {
-					elapsed, _, _ := t.Elapsed()
-					print(stream, t, fmt.Sprintf("Test case done in %.2f sec. Assertions: %d", elapsed.Seconds(), t.CountAssertSuccess), colorLogTestCase)
-				}
-			}
-		} else if e, ok := i.(oscar.TestLogEvent); ok {
+		} else if e, ok := i.(events.LogEvent); ok {
 			c := colorLogDebug
-			if e.Level == 1 {
+			if e.Level == 2 {
 				c = colorLogInfo
 			}
-			print(stream, e.Owner, e.Message, c)
-		} else if s, ok := i.(oscar.SetVarEvent); ok && showSetValue {
+			print(stream, e.Pattern, c)
+		} else if s, ok := i.(events.SetVar); ok && showSetValue {
 			prev := ""
 			if s.Previous != nil && *s.Previous != s.Value {
 				prev = " previous value was " + *s.Previous
 			}
 
-			fmt.Fprintf(
-				stream,
-				"%s %s\n",
-				colorLogTime.Sprint(time.Now().Format("15:04:05")),
-				colorLogDebug.Sprintf(
-					"Setting %s := %s%s",
-					s.Key,
-					s.Value,
-					prev,
-				),
-			)
+			print(stream, fmt.Sprintf("Setting %s := %s%s", s.Key, s.Value, prev), colorLogDebug)
 		}
 	}
 }
@@ -62,11 +55,11 @@ var colorLogInfo = color.New(color.FgCyan)
 var colorLogTestCase = color.New(color.FgHiGreen)
 var colorLogError = color.New(color.FgHiYellow)
 
-func print(stream io.Writer, t *oscar.TestCase, message string, c *color.Color) {
+func print(stream io.Writer, message string, c *color.Color) {
 	fmt.Fprintf(
 		stream,
 		"%s %s\n",
 		colorLogTime.Sprint(time.Now().Format("15:04:05")),
-		c.Sprint(t.Interpolate(message)),
+		c.Sprint(message),
 	)
 }
