@@ -7,10 +7,12 @@ import (
 
 func lJSONPathExtract(L *lua.LState) int {
 	tc := lContext(L)
-	path := tc.Interpolate(L.CheckString(2))
+	xpath := tc.Interpolate(L.CheckString(2))
 	source := tc.Interpolate(L.CheckString(3))
 
-	value, err := jsonPath.Extract([]byte(source), path)
+	tc.Tracef(`Reading JSON XPath "%s"`, xpath)
+
+	value, err := jsonPath.Extract([]byte(source), xpath)
 	if err != nil {
 		L.RaiseError(err.Error())
 		return 0
