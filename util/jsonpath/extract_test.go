@@ -1,4 +1,4 @@
-package jsonPath
+package jsonpath
 
 import (
 	"github.com/stretchr/testify/assert"

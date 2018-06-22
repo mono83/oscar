@@ -2,7 +2,7 @@ package lua
 
 import (
 	"fmt"
-	"github.com/mono83/oscar/util/jsonPath"
+	"github.com/mono83/oscar/util/jsonpath"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -18,7 +18,7 @@ func lAssertJSONPath(L *lua.LState) int {
 	tc.Tracef(`Reading JSON XPath "%s"`, xpath)
 
 	// Extracting json path
-	actual, err := jsonPath.Extract([]byte(body), xpath)
+	actual, err := jsonpath.Extract([]byte(body), xpath)
 	if err != nil {
 		tc.AssertFinished(err)
 		L.RaiseError(err.Error())

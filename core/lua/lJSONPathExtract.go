@@ -1,7 +1,7 @@
 package lua
 
 import (
-	"github.com/mono83/oscar/util/jsonPath"
+	"github.com/mono83/oscar/util/jsonpath"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -12,7 +12,7 @@ func lJSONPathExtract(L *lua.LState) int {
 
 	tc.Tracef(`Reading JSON XPath "%s"`, xpath)
 
-	value, err := jsonPath.Extract([]byte(source), xpath)
+	value, err := jsonpath.Extract([]byte(source), xpath)
 	if err != nil {
 		L.RaiseError(err.Error())
 		return 0

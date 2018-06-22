@@ -1,4 +1,4 @@
-package jsonPath
+package jsonpath
 
 import (
 	"bytes"

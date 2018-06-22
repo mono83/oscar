@@ -3,7 +3,7 @@ package lua
 import (
 	"errors"
 	"github.com/mono83/oscar/core"
-	"github.com/mono83/oscar/util/jsonEncoder"
+	"github.com/mono83/oscar/util/jsonencoder"
 	"github.com/mono83/oscar/util/rsa"
 	"github.com/yuin/gopher-lua"
 )
@@ -74,7 +74,7 @@ func (f *fileTestSuite) InjectModule(L *lua.LState) {
 			"assertJSONPath":  lAssertJSONPath,
 			"assertJSONXPath": lAssertJSONPath,
 			"get":             lGetVar,
-			"httpGet" :        lHTTPGet,
+			"httpGet":         lHTTPGet,
 			"httpPost":        lHTTPPost,
 			"jsonPath":        lJSONPathExtract,
 			"jsonXPath":       lJSONPathExtract,
@@ -120,7 +120,7 @@ func (f *fileTestSuite) InjectModule(L *lua.LState) {
 		rsa.RegisterType(L)
 
 		// Adding JSON module
-		jsonEncoder.RegisterType(L)
+		jsonencoder.RegisterType(L)
 
 		// returns the module
 		L.Push(mod)
