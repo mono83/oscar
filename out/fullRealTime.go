@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-// GetTestCasePrinter returns events receiver, used to print test case flow
-func GetTestCasePrinter(stream io.Writer, showSetValue bool) func(interface{}) {
+// FullRealTimePrinter returns events receiver, used to print test case flow
+func FullRealTimePrinter(stream io.Writer, showSetValue bool) func(interface{}) {
 	return func(i interface{}) {
 		if s, ok := i.(events.Start); ok {
 			print(
