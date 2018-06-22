@@ -10,4 +10,4 @@ build: deps
 	CGO_ENABLED=0 GOOS="linux" GOARCH="amd64" go build -a -o release/oscar_linux main/oscar.go
 
 examples:
-	go run main/oscar.go run example/base64.lua example/httpbin.lua example/fail.lua example/common.lua -j dev/report.json
+	go run main/oscar.go run example/base64.lua example/httpbin.lua example/fail.lua example/common.lua -e example/env.ini -l example/wrapper.lua -j dev/report.json  -v

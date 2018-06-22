@@ -86,8 +86,9 @@ func (f *fileTestSuite) InjectModule(L *lua.LState) {
 			"stringToBase64":    lStringToBase64,
 			"packInt64ToBase64": lPackSliceInt64ToBase64,
 
-			"log":  lDebug,
-			"info": lInfo,
+			"log":   lDebug,
+			"debug": lDebug,
+			"info":  lInfo,
 		}))
 
 		// Making lambdas
