@@ -9,15 +9,21 @@ import (
 )
 
 // FullRealTimePrinter returns events receiver, used to print test case flow
-func FullRealTimePrinter(stream io.Writer, showSetValue bool) func(interface{}) {
+func FullRealTimePrinter(stream io.Writer, showSetValue bool, showTrace bool) func(interface{}) {
 	return func(i interface{}) {
 		if s, ok := i.(events.Start); ok {
+			if s.Type == "TestSuite" && !showTrace {
+				return
+			}
 			print(
 				stream,
 				fmt.Sprintf("Starting %s %s", s.Type, s.Name),
 				colorLogTestCase,
 			)
 		} else if s, ok := i.(events.Finish); ok {
+			if s.Type == "TestSuite" && !showTrace {
+				return
+			}
 			if s.Error == nil {
 				print(
 					stream,
@@ -27,11 +33,14 @@ func FullRealTimePrinter(stream io.Writer, showSetValue bool) func(interface{}) 
 			} else {
 				print(
 					stream,
-					fmt.Sprintf("%s %s completed with error", s.Type, s.Name),
+					fmt.Sprintf("%s \"%s\" completed with an error", s.Type, s.Name),
 					colorLogError,
 				)
 			}
 		} else if e, ok := i.(events.LogEvent); ok {
+			if e.Level == 0 && !showTrace {
+				return
+			}
 			c := colorLogDebug
 			if e.Level == 2 {
 				c = colorLogInfo

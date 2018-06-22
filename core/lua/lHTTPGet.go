@@ -78,7 +78,7 @@ func lHTTPGet(L *lua.LState) int {
 		}
 	}
 
-	tc.Debugf(
+	tc.Tracef(
 		"HTTP request done in %s, received %d bytes with code %d",
 		delta,
 		len(bts),

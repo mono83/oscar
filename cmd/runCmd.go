@@ -87,7 +87,7 @@ var runCmd = &cobra.Command{
 
 		if !quiet {
 			if verbose || veryVerbose {
-				d.List = append(d.List, out.FullRealTimePrinter(os.Stdout, veryVerbose))
+				d.List = append(d.List, out.FullRealTimePrinter(os.Stdout, veryVerbose, veryVerbose))
 			} else {
 				d.List = append(d.List, out.DotRealTimePrinter(os.Stdout))
 			}
