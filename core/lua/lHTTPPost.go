@@ -30,7 +30,7 @@ func lHTTPPost(L *lua.LState) int {
 	}
 
 	// Building HTTP request
-	tc.Tracef("Preparing HTTP request to %s", url)
+	tc.Tracef("Preparing HTTP POST request to %s", url)
 	req, err := http.NewRequest("POST", url, bytes.NewBufferString(body))
 	req.Header = headers
 	if err != nil {
