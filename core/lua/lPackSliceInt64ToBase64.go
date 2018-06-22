@@ -1,10 +1,10 @@
 package lua
 
 import (
-	"github.com/yuin/gopher-lua"
-	"encoding/binary"
 	"encoding/base64"
+	"encoding/binary"
 	"github.com/mono83/oscar/util"
+	"github.com/yuin/gopher-lua"
 )
 
 func lPackSliceInt64ToBase64(L *lua.LState) int {

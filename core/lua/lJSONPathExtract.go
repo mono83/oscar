@@ -1,8 +1,8 @@
 package lua
 
 import (
-	"github.com/yuin/gopher-lua"
 	"github.com/mono83/oscar/util/jsonPath"
+	"github.com/yuin/gopher-lua"
 )
 
 func lJSONPathExtract(L *lua.LState) int {

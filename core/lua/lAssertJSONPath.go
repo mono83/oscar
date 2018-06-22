@@ -1,9 +1,9 @@
 package lua
 
 import (
-	"github.com/yuin/gopher-lua"
 	"fmt"
 	"github.com/mono83/oscar/util/jsonPath"
+	"github.com/yuin/gopher-lua"
 )
 
 func lAssertJSONPath(L *lua.LState) int {

@@ -10,4 +10,3 @@ func lUnix(L *lua.LState) int {
 	L.Push(lua.LNumber(float64(time.Now().Unix())))
 	return 1
 }
-

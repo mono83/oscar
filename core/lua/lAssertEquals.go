@@ -1,8 +1,8 @@
 package lua
 
 import (
-	"github.com/yuin/gopher-lua"
 	"fmt"
+	"github.com/yuin/gopher-lua"
 )
 
 // lAssertEquals performs equality assertions

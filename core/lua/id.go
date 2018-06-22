@@ -2,14 +2,14 @@ package lua
 
 import "sync"
 
-var incrementalId int
-var incrementalIdMutex sync.Mutex
+var incrementalID int
+var incrementalIDMutex sync.Mutex
 
 // id generates new unique incremental identifier
 func id() int {
-	incrementalIdMutex.Lock()
-	defer incrementalIdMutex.Unlock()
+	incrementalIDMutex.Lock()
+	defer incrementalIDMutex.Unlock()
 
-	incrementalId++
-	return incrementalId
+	incrementalID++
+	return incrementalID
 }

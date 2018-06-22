@@ -1,8 +1,8 @@
 package lua
 
 import (
-	"github.com/yuin/gopher-lua"
 	"encoding/base64"
+	"github.com/yuin/gopher-lua"
 )
 
 func lStringToBase64(L *lua.LState) int {

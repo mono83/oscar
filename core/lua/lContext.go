@@ -1,8 +1,8 @@
 package lua
 
 import (
-	"github.com/yuin/gopher-lua"
 	"github.com/mono83/oscar/core"
+	"github.com/yuin/gopher-lua"
 )
 
 // lContext is the most important function in Go-Lua intercommunication
@@ -15,6 +15,4 @@ func lContext(L *lua.LState) *core.Context {
 	}
 
 	panic("Unable to read testing context from Lua stack")
-
-	return nil
 }

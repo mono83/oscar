@@ -1,13 +1,13 @@
 package lua
 
 import (
-	"time"
-	"io/ioutil"
-	"strconv"
-	"github.com/yuin/gopher-lua"
 	"bytes"
-	"net/http"
 	"github.com/mono83/oscar/core/events"
+	"github.com/yuin/gopher-lua"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+	"time"
 )
 
 var httpClient = http.Client{}
