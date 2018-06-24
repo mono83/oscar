@@ -34,14 +34,22 @@ func (s summaryTable) EachRow(f func(...table.Cell)) {
 		success, failed := node.CountAssertionsRecursive()
 
 		var typeCell table.Cell = cells.Empty{}
-		if "TestSuite" == node.Type {
+		if "TestSuite" == node.Type || "TestSuiteInit" == node.Type {
 			typeCell = cells.ColoredWhite(cells.AlignCenter(cells.String("Suite")))
 		}
 
 		var nameCell table.Cell
 		nameCell = cells.String(node.Name)
+		if "TestSuiteInit" == node.Type {
+			nameCell = cells.String(" ~ SetUp ~ ")
+		}
+
 		if failed > 0 {
 			nameCell = cells.ColoredRedHi(nameCell)
+		} else if "TestSuiteInit" == node.Type {
+			nameCell = cells.ColoredWhite(nameCell)
+		} else {
+			nameCell = cells.ColoredGreenHi(nameCell)
 		}
 
 		f(

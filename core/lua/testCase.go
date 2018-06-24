@@ -21,19 +21,18 @@ func (t *testcase) ID() (int, string) {
 }
 
 func (t *testcase) Assert(c *core.Context) (err error) {
-	proxy := c.Fork()
-	proxy.OnEvent = t.assertDoneInterceptor
+	c.OnEvent = buildAssertDoneInterceptor(t, c.OnEvent)
 
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("%+v", r)
-			proxy.AssertFinished(err)
+			c.AssertFinished(err)
 		}
 	}()
 
 	// Building wrapper over context
 	udc := t.state.NewUserData()
-	udc.Value = proxy
+	udc.Value = c
 	t.state.SetMetatable(udc, t.state.GetTypeMetatable(TestCaseMeta))
 
 	// Injecting and invoking
@@ -41,15 +40,21 @@ func (t *testcase) Assert(c *core.Context) (err error) {
 	t.state.Push(udc)
 	t.state.Call(1, 0)
 
-	proxy.Wait()
+	c.Wait()
 
 	return t.err
 }
 
-func (t *testcase) assertDoneInterceptor(i interface{}) {
-	if s, ok := i.(events.AssertDone); ok {
-		if s.Error != nil && t.err == nil {
-			t.err = s.Error
+func buildAssertDoneInterceptor(t *testcase, o func(interface{})) func(interface{}) {
+	return func(i interface{}) {
+		if s, ok := i.(events.AssertDone); ok {
+			if s.Error != nil && t.err == nil {
+				t.err = s.Error
+			}
+		}
+
+		if o != nil {
+			o(i)
 		}
 	}
 }

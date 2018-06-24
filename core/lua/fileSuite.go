@@ -43,12 +43,21 @@ type fileTestSuite struct {
 	id    int
 	name  string
 	state *lua.LState
+	setup *testcase
 	cases []*testcase
 }
 
 // ID returns test suite name and identifier
 func (f *fileTestSuite) ID() (int, string) {
 	return f.id, f.name
+}
+
+// GetSetUp returns optional setup function, that will be invoked before any other test cases
+func (f *fileTestSuite) GetSetUp() core.Case {
+	if f.setup == nil {
+		return nil
+	}
+	return f.setup
 }
 
 // GetCases returns test cases
@@ -92,7 +101,7 @@ func (f *fileTestSuite) InjectModule(L *lua.LState) {
 		}))
 
 		// Making lambdas
-		reg := func(L *lua.LState) int {
+		clbRegCase := func(L *lua.LState) int {
 			name := L.CheckString(1)
 			clb := L.CheckFunction(2)
 
@@ -109,11 +118,24 @@ func (f *fileTestSuite) InjectModule(L *lua.LState) {
 			return 0
 		}
 
+		clbRegSetup := func(L *lua.LState) int {
+			clb := L.CheckFunction(1)
+
+			f.setup = &testcase{
+				id:       id(),
+				name:     core.SuiteSetUp,
+				function: clb,
+				state:    f.state,
+			}
+
+			return 0
+		}
+
 		// register functions to the table
 		mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-			"add":   reg,
-			"init":  reg,
-			"setUp": reg,
+			"add":   clbRegCase,
+			"init":  clbRegSetup,
+			"setUp": clbRegSetup,
 			"unix":  lUnix,
 		})
 

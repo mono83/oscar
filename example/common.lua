@@ -1,5 +1,6 @@
 -- Loading Oscar module
 local o = require("oscar")
+local w
 
 o.add("Sleep", function(tc)
     tc:sleep(100)
@@ -18,6 +19,15 @@ o.add("Common environment variables", function(tc)
 end)
 
 o.add("Common library wrappers", function(tc)
-    local w = Wrapper:create(tc)
     w:doAssertPositive(10)
+end)
+
+o.add("Init variable read", function(tc)
+    tc:assertEquals("${initvar}", "zzz")
+end)
+
+o.setUp(function(tc)
+    tc:info("SetUp function")
+    w = Wrapper:create(tc)
+    tc:set("initvar", "zzz")
 end)

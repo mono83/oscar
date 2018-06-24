@@ -6,13 +6,16 @@ import (
 	"github.com/mono83/oscar/core/events"
 	"io"
 	"sync"
+	"time"
 )
 
 // DotRealTimePrinter returns events receiver, used to print test case flow
 func DotRealTimePrinter(stream io.Writer) func(interface{}) {
 	cnt := 0
-	max := 40
+	max := 60
 	m := sync.Mutex{}
+
+	startedAt := time.Now()
 
 	print := func(s rune, c *color.Color) {
 		str := string(s)
@@ -24,7 +27,7 @@ func DotRealTimePrinter(stream io.Writer) func(interface{}) {
 		fmt.Fprint(stream, str)
 		cnt++
 		if cnt == max {
-			fmt.Fprintln(stream)
+			fmt.Fprintf(stream, " %.0fs elapsed.\n", time.Now().Sub(startedAt).Seconds())
 			cnt = 0
 		}
 		m.Unlock()
