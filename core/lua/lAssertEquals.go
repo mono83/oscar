@@ -1,7 +1,6 @@
 package lua
 
 import (
-	"fmt"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -15,14 +14,12 @@ func lAssertEquals(L *lua.LState) int {
 	tc.Tracef(`Assert "%s" (actual, left) equals "%s"`, actual, expected)
 	success := actual == expected
 	if !success {
-		err := fmt.Errorf(
-			`assertion failed. "%s" (actual, left) != "%s".%s`,
+		L.RaiseError(
+			`Assertion failed. "%s" (actual, left) != "%s".%s`,
 			actual,
 			expected,
 			doc,
 		)
-		tc.AssertFinished(err)
-		L.RaiseError("Assertion failed")
 	} else {
 		tc.AssertFinished(nil)
 	}

@@ -82,6 +82,7 @@ func (f *fileTestSuite) InjectModule(L *lua.LState) {
 			"assertEquals":    lAssertEquals,
 			"assertJSONPath":  lAssertJSONPath,
 			"assertJSONXPath": lAssertJSONPath,
+			"fail":            lFail,
 			"get":             lGetVar,
 			"httpGet":         lHTTPGet,
 			"httpPost":        lHTTPPost,
