@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/fatih/color"
-	"github.com/mono83/oscar/core"
-	"github.com/mono83/oscar/core/lua"
+	"github.com/mono83/oscar"
+	"github.com/mono83/oscar/lua"
 	"github.com/mono83/oscar/out"
 	"github.com/spf13/cobra"
 	"gopkg.in/ini.v1"
@@ -55,7 +55,7 @@ var runCmd = &cobra.Command{
 		color.NoColor = noAnsi
 
 		// Building ROOT testing context
-		context := core.NewContext()
+		context := oscar.NewContext()
 		context.SetInitial(values)
 		context.Set("lua.engine", "Oscar ][")
 
@@ -94,9 +94,9 @@ var runCmd = &cobra.Command{
 		}
 
 		// Loading LUA files
-		var suites []core.Suite
+		var suites []oscar.Suite
 		for _, file := range args {
-			var suite core.Suite
+			var suite oscar.Suite
 			var err error
 			if len(header) > 0 {
 				suite, err = lua.SuiteFromFiles(header, file)
@@ -111,7 +111,7 @@ var runCmd = &cobra.Command{
 		}
 
 		// Running
-		return core.RunSequential(context, suites)
+		return oscar.RunSequential(context, suites)
 	},
 }
 

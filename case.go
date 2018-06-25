@@ -1,4 +1,4 @@
-package core
+package oscar
 
 // Case represents common test case
 type Case interface {

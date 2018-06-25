@@ -1,9 +1,9 @@
-package core
+package oscar
 
 import (
 	"errors"
 	"fmt"
-	"github.com/mono83/oscar/core/events"
+	"github.com/mono83/oscar/events"
 )
 
 // RunSequential runs all provided cases sequentially

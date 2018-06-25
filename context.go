@@ -1,8 +1,8 @@
-package core
+package oscar
 
 import (
 	"fmt"
-	"github.com/mono83/oscar/core/events"
+	"github.com/mono83/oscar/events"
 	"regexp"
 	"sync"
 	"time"

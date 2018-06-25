@@ -2,8 +2,8 @@ package lua
 
 import (
 	"fmt"
-	"github.com/mono83/oscar/core"
-	"github.com/mono83/oscar/core/events"
+	"github.com/mono83/oscar"
+	"github.com/mono83/oscar/events"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -20,7 +20,7 @@ func (t *testcase) ID() (int, string) {
 	return t.id, t.name
 }
 
-func (t *testcase) Assert(c *core.Context) (err error) {
+func (t *testcase) Assert(c *oscar.Context) (err error) {
 	c.OnEvent = buildAssertDoneInterceptor(t, c.OnEvent)
 
 	defer func() {

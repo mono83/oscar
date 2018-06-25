@@ -2,7 +2,7 @@ package lua
 
 import (
 	"errors"
-	"github.com/mono83/oscar/core"
+	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/util/jsonencoder"
 	"github.com/mono83/oscar/util/rsa"
 	"github.com/yuin/gopher-lua"
@@ -12,7 +12,7 @@ import (
 const TestCaseMeta = "TestCaseType"
 
 // SuiteFromFiles builds suite using Lua sources file
-func SuiteFromFiles(files ...string) (core.Suite, error) {
+func SuiteFromFiles(files ...string) (oscar.Suite, error) {
 	if len(files) == 0 {
 		return nil, errors.New("empty files list to load")
 	}
@@ -53,7 +53,7 @@ func (f *fileTestSuite) ID() (int, string) {
 }
 
 // GetSetUp returns optional setup function, that will be invoked before any other test cases
-func (f *fileTestSuite) GetSetUp() core.Case {
+func (f *fileTestSuite) GetSetUp() oscar.Case {
 	if f.setup == nil {
 		return nil
 	}
@@ -61,8 +61,8 @@ func (f *fileTestSuite) GetSetUp() core.Case {
 }
 
 // GetCases returns test cases
-func (f *fileTestSuite) GetCases() []core.Case {
-	cs := make([]core.Case, len(f.cases))
+func (f *fileTestSuite) GetCases() []oscar.Case {
+	cs := make([]oscar.Case, len(f.cases))
 	for i := range f.cases {
 		cs[i] = f.cases[i]
 	}
@@ -124,7 +124,7 @@ func (f *fileTestSuite) InjectModule(L *lua.LState) {
 
 			f.setup = &testcase{
 				id:       id(),
-				name:     core.SuiteSetUp,
+				name:     oscar.SuiteSetUp,
 				function: clb,
 				state:    f.state,
 			}

@@ -1,4 +1,4 @@
-package core
+package oscar
 
 // SuiteSetUp contains internal name for suite initializer func
 const SuiteSetUp = "__INIT__"

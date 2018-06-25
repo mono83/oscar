@@ -2,7 +2,7 @@ package out
 
 import (
 	"encoding/json"
-	"github.com/mono83/oscar/core/events"
+	"github.com/mono83/oscar/events"
 	"sync"
 	"time"
 )

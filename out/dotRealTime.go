@@ -3,7 +3,7 @@ package out
 import (
 	"fmt"
 	"github.com/fatih/color"
-	"github.com/mono83/oscar/core/events"
+	"github.com/mono83/oscar/events"
 	"io"
 	"sync"
 	"time"
