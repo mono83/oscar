@@ -59,7 +59,8 @@ func (r *Report) OnEvent(e interface{}) {
 		if a.Error == nil {
 			r.current.Assertions++
 		} else if r.current.Error == nil {
-			r.current.Error = a.Error
+			errmsg := a.Error.Error()
+			r.current.Error = &errmsg
 		}
 	} else if v, ok := e.(events.SetVar); ok {
 		if len(r.current.Variables) == 0 {
@@ -90,6 +91,19 @@ func (r *Report) JSON() string {
 	return ""
 }
 
+// LoadJSON loads report from saved JSON
+func LoadJSON(bts []byte) (*Report, error) {
+	var r ReportNode
+	if err := json.Unmarshal(bts, &r); err != nil {
+		return nil, err
+	}
+
+	return &Report{
+		self:    &r,
+		current: &r,
+	}, nil
+}
+
 // ReportNode is a report node
 type ReportNode struct {
 	ID   int
@@ -103,7 +117,7 @@ type ReportNode struct {
 	Elements []*ReportNode
 
 	Assertions int
-	Error      error
+	Error      *string
 	Sleep      time.Duration
 	Logs       []ReportLogLine
 	Remotes    []ReportRemoteRequest
