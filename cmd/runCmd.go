@@ -68,24 +68,6 @@ var runCmd = &cobra.Command{
 		d.List = append(d.List, reporter.OnEvent)
 
 		if !quiet {
-			defer func() {
-				fmt.Fprintln(os.Stdout, "")
-				fmt.Fprintln(os.Stdout, "")
-				out.PrintTestCaseErrorsSummary(os.Stdout, reporter)
-				fmt.Fprintln(os.Stdout, "")
-				fmt.Fprintln(os.Stdout, "")
-				out.PrintSummary(os.Stdout, reporter)
-				fmt.Fprintln(os.Stdout, "")
-			}()
-		}
-
-		if len(outJSONFile) > 0 {
-			defer func() {
-				ioutil.WriteFile(outJSONFile, []byte(reporter.JSON()), 0644)
-			}()
-		}
-
-		if !quiet {
 			if verbose || veryVerbose {
 				d.List = append(d.List, out.FullRealTimePrinter(os.Stdout, veryVerbose, veryVerbose))
 			} else {
@@ -108,6 +90,24 @@ var runCmd = &cobra.Command{
 				return err
 			}
 			suites = append(suites, suite)
+		}
+
+		if !quiet {
+			defer func() {
+				fmt.Fprintln(os.Stdout, "")
+				fmt.Fprintln(os.Stdout, "")
+				out.PrintTestCaseErrorsSummary(os.Stdout, reporter)
+				fmt.Fprintln(os.Stdout, "")
+				fmt.Fprintln(os.Stdout, "")
+				out.PrintSummary(os.Stdout, reporter)
+				fmt.Fprintln(os.Stdout, "")
+			}()
+		}
+
+		if len(outJSONFile) > 0 {
+			defer func() {
+				ioutil.WriteFile(outJSONFile, []byte(reporter.JSON()), 0644)
+			}()
 		}
 
 		// Running
