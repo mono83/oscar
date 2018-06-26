@@ -54,7 +54,7 @@ func lHTTPPost(L *lua.LState) int {
 	// Sending HTTP request
 	before := time.Now()
 	resp, err := httpClient.Do(req)
-	tc.Emit(events.RemoteRequest{Type: "HTTP-POST", Elapsed: time.Now().Sub(before), Success: err == nil})
+	tc.Emit(events.RemoteRequest{Type: "http+post", URI: url, Elapsed: time.Now().Sub(before), Success: err == nil})
 	if err != nil {
 		tc.AssertFinished(err)
 		L.RaiseError(err.Error())

@@ -48,7 +48,7 @@ func lHTTPGet(L *lua.LState) int {
 	// Sending HTTP request
 	before := time.Now()
 	resp, err := httpClient.Do(req)
-	tc.Emit(events.RemoteRequest{Type: "HTTP-GET", Elapsed: time.Now().Sub(before), Success: err == nil})
+	tc.Emit(events.RemoteRequest{Type: "http+get", URI: url, Elapsed: time.Now().Sub(before), Success: err == nil})
 	if err != nil {
 		tc.AssertFinished(err)
 		L.RaiseError(err.Error())
