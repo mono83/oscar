@@ -21,6 +21,7 @@ var environmentFile string
 var filter string
 var header string
 var outJSONFile string
+var outHTMLPath string
 
 var runCmd = &cobra.Command{
 	Use:   "run",
@@ -109,6 +110,13 @@ var runCmd = &cobra.Command{
 				ioutil.WriteFile(outJSONFile, []byte(reporter.JSON()), 0644)
 			}()
 		}
+		if len(outHTMLPath) > 0 {
+			defer func() {
+				if err := out.WriteHTMLFiles(outHTMLPath, reporter); err != nil {
+					fmt.Println(err)
+				}
+			}()
+		}
 
 		// Running
 		return oscar.RunSequential(context, suites)
@@ -124,4 +132,5 @@ func init() {
 	runCmd.Flags().StringVarP(&filter, "filter", "f", "", "Test case name filter, regex")
 	runCmd.Flags().StringVarP(&header, "lib", "l", "", "Add library lua file with helper functions")
 	runCmd.Flags().StringVarP(&outJSONFile, "json-report", "j", "", "JSON report filename")
+	runCmd.Flags().StringVar(&outHTMLPath, "html-report", "", "HTML report path")
 }

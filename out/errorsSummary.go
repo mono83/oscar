@@ -13,7 +13,7 @@ func PrintTestCaseErrorsSummary(stream io.Writer, report *Report) {
 		if node.Type == "TestCase" && node.Error != nil {
 			i++
 			colorErrorSummaryErrorLine.Fprintf(stream, "%d. Error in \"%s\"\n", i, node.Name)
-			fmt.Fprintln(stream, node.Error)
+			fmt.Fprintln(stream, *node.Error)
 			if len(node.Variables) > 0 {
 				colorErrorSummaryVars.Fprintln(stream, "Variables dump:")
 				for k, v := range node.Variables {
