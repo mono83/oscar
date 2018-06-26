@@ -11,6 +11,6 @@ func init() {
 	OscarCmd.AddCommand(
 		runCmd,
 		nopCmd,
-		reportCmd,
+		htmlCmd,
 	)
 }

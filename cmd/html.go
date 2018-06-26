@@ -5,15 +5,14 @@ import (
 	"github.com/mono83/oscar/out"
 	"github.com/spf13/cobra"
 	"io/ioutil"
-	"os"
 )
 
-var reportCmd = &cobra.Command{
-	Use:   "report file",
-	Short: "Converts report from JSON format to other",
+var htmlCmd = &cobra.Command{
+	Use:   "html file.json folder",
+	Short: "Converts report from JSON format to HTML",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return errors.New("report file name not provided")
+		if len(args) != 2 {
+			return errors.New("both source report and destination folder must be provided")
 		}
 
 		bts, err := ioutil.ReadFile(args[0])
@@ -26,7 +25,6 @@ var reportCmd = &cobra.Command{
 			return err
 		}
 
-		out.PrintSummary(os.Stdout, report)
-		return nil
+		return out.WriteHTMLFiles(args[1], report)
 	},
 }
