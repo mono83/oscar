@@ -53,7 +53,7 @@ func DotRealTimePrinter(stream io.Writer) func(interface{}) {
 }
 
 var colorDotSF = color.New(color.FgBlack)
-var colorDotOK = color.New(color.FgGreen)
+var colorDotOK = color.New(color.FgHiGreen)
 var colorDotErr = color.New(color.FgRed)
-var colorDotSleep = color.New(color.FgBlue)
+var colorDotSleep = color.New(color.FgGreen)
 var colorDotRemote = color.New(color.FgHiCyan)

@@ -3,6 +3,7 @@ package out
 import (
 	"encoding/json"
 	"github.com/mono83/oscar/events"
+	"sort"
 	"sync"
 	"time"
 )
@@ -40,11 +41,15 @@ func (r *Report) OnEvent(e interface{}) {
 			Name:    s.Name,
 			StartAt: now,
 		}
+		if r.self.StartAt.IsZero() {
+			r.self.StartAt = now
+		}
 
 		r.current.Elements = append(r.current.Elements, node)
 		r.current = node
 	} else if _, ok := e.(events.Finish); ok {
 		r.current.FinishAt = now
+		r.self.FinishAt = now
 		if r.current.parent != nil {
 			r.current = r.current.parent
 		}
@@ -52,6 +57,7 @@ func (r *Report) OnEvent(e interface{}) {
 		r.current.Remotes = append(r.current.Remotes, ReportRemoteRequest{
 			Time:    now,
 			Type:    rr.Type,
+			URI:     rr.URI,
 			Elapsed: rr.Elapsed,
 			Success: rr.Success,
 		})
@@ -73,6 +79,11 @@ func (r *Report) OnEvent(e interface{}) {
 	}
 }
 
+// Suites returns suites collection
+func (r *Report) Suites() []*ReportNode {
+	return r.self.Elements
+}
+
 // Flatten converts report data from tree to linear
 func (r *Report) Flatten() []ReportNode {
 	if r.self == nil {
@@ -91,6 +102,104 @@ func (r *Report) JSON() string {
 	return ""
 }
 
+// TopRemoteRequests returns remote requests, that consumes most time
+func (r *Report) TopRemoteRequests(count int, mode string) []AggregatedReportRemoteRequest {
+	rr := r.self.RemoteRequestsRecursive()
+	if len(rr) == 0 {
+		return nil
+	}
+
+	// Aggregating
+	agg := map[string]*AggregatedReportRemoteRequest{}
+	for _, req := range rr {
+		key := req.Type + req.URI
+		if v, ok := agg[key]; ok {
+			v.Elapsed = append(v.Elapsed, req.Elapsed)
+		} else {
+			agg[key] = &AggregatedReportRemoteRequest{
+				Type:    req.Type,
+				URI:     req.URI,
+				Elapsed: []time.Duration{req.Elapsed},
+			}
+		}
+	}
+
+	// Converting to slice
+	var sl []AggregatedReportRemoteRequest
+	for _, v := range agg {
+		sl = append(sl, *v)
+	}
+
+	// Sorting by total
+	sort.Slice(sl, func(i, j int) bool {
+		if mode == "avg" {
+			return sl[i].Avg().Nanoseconds() > sl[j].Avg().Nanoseconds()
+		} else if mode == "max" {
+			return sl[i].Max().Nanoseconds() > sl[j].Max().Nanoseconds()
+		}
+
+		return sl[i].Total().Nanoseconds() > sl[j].Total().Nanoseconds()
+	})
+
+	if len(sl) > count {
+		sl = sl[0:count]
+	}
+
+	return sl
+}
+
+// AggregatedReportRemoteRequest contains aggregated data for time spent on remote requests
+type AggregatedReportRemoteRequest struct {
+	Type    string
+	URI     string
+	Elapsed []time.Duration
+}
+
+// Total calculates total time, spent on single URL
+func (a AggregatedReportRemoteRequest) Total() time.Duration {
+	var t time.Duration
+	for _, e := range a.Elapsed {
+		t += e
+	}
+	return t
+}
+
+// Count returns amount of requests, made on single URL
+func (a AggregatedReportRemoteRequest) Count() int {
+	return len(a.Elapsed)
+}
+
+// Avg calculates average time across requests to single URL
+func (a AggregatedReportRemoteRequest) Avg() time.Duration {
+	return time.Duration(a.Total().Nanoseconds() / int64(a.Count()))
+}
+
+// Min returns minimal time, spent on URL
+func (a AggregatedReportRemoteRequest) Min() time.Duration {
+	min := a.Elapsed[0]
+	if len(a.Elapsed) > 0 {
+		for _, x := range a.Elapsed {
+			if x < min {
+				min = x
+			}
+		}
+	}
+	return min
+}
+
+// Max returns max time, spent on URL
+func (a AggregatedReportRemoteRequest) Max() time.Duration {
+	min := a.Elapsed[0]
+	if len(a.Elapsed) > 0 {
+		for _, x := range a.Elapsed {
+			if x > min {
+				min = x
+			}
+		}
+	}
+	return min
+}
+
 // LoadJSON loads report from saved JSON
 func LoadJSON(bts []byte) (*Report, error) {
 	var r ReportNode
@@ -98,126 +207,18 @@ func LoadJSON(bts []byte) (*Report, error) {
 		return nil, err
 	}
 
-	return &Report{
+	x := &Report{
 		self:    &r,
 		current: &r,
-	}, nil
-}
-
-// ReportNode is a report node
-type ReportNode struct {
-	ID   int
-	Type string
-	Name string
-
-	StartAt  time.Time
-	FinishAt time.Time
-
-	parent   *ReportNode
-	Elements []*ReportNode
-
-	Assertions int
-	Error      *string
-	Sleep      time.Duration
-	Logs       []ReportLogLine
-	Remotes    []ReportRemoteRequest
-	Variables  map[string]string
-}
-
-// CountAssertions returns assertions count, made by this node
-func (r ReportNode) CountAssertions() (success int, failed int) {
-	success = r.Assertions
-	if r.Error != nil {
-		failed = 1
 	}
 
-	return
+	linkParentRecursively(x.self)
+	return x, nil
 }
 
-// CountAssertionsRecursive returns assertions count made by this and child nodes
-func (r ReportNode) CountAssertionsRecursive() (success int, failed int) {
-	success = r.Assertions
-	if r.Error != nil {
-		failed = 1
+func linkParentRecursively(n *ReportNode) {
+	for _, e := range n.Elements {
+		e.parent = n
+		linkParentRecursively(e)
 	}
-
-	for _, child := range r.Elements {
-		cs, cf := child.CountAssertionsRecursive()
-		success += cs
-		failed += cf
-	}
-
-	return
-}
-
-// CountRemoteRequestsRecursive returns amount of remote requests, done by this node and its childs
-func (r ReportNode) CountRemoteRequestsRecursive() int {
-	count := len(r.Remotes)
-
-	for _, child := range r.Elements {
-		count += child.CountRemoteRequestsRecursive()
-	}
-
-	return count
-}
-
-// ElapsedRemoteRecursive returns total elapsed time, spent by current node and it's childs on remote requests
-func (r ReportNode) ElapsedRemoteRecursive() time.Duration {
-	var total time.Duration
-
-	for _, rr := range r.Remotes {
-		total += rr.Elapsed
-	}
-
-	for _, child := range r.Elements {
-		total += child.ElapsedRemoteRecursive()
-	}
-
-	return total
-}
-
-// ElapsedSleepRecursive returns total elapsed time, spent by current node and it's childs on sleeps
-func (r ReportNode) ElapsedSleepRecursive() time.Duration {
-	total := r.Sleep
-
-	for _, child := range r.Elements {
-		total += child.ElapsedSleepRecursive()
-	}
-
-	return total
-}
-
-// Elapsed returns time, spent by this node
-func (r ReportNode) Elapsed() time.Duration {
-	if r.StartAt.IsZero() || r.FinishAt.IsZero() {
-		return time.Duration(0)
-	}
-
-	return r.FinishAt.Sub(r.StartAt)
-}
-
-// Flatten converts node data from tree to linear
-func (r ReportNode) Flatten() []ReportNode {
-	var nodes []ReportNode
-	nodes = append(nodes, r)
-	for _, child := range r.Elements {
-		nodes = append(nodes, child.Flatten()...)
-	}
-
-	return nodes
-}
-
-// ReportLogLine contains logging data with event time
-type ReportLogLine struct {
-	Time    time.Time
-	Level   byte
-	Message string
-}
-
-// ReportRemoteRequest contains remote request event data with event time
-type ReportRemoteRequest struct {
-	Time    time.Time
-	Type    string
-	Elapsed time.Duration
-	Success bool
 }
