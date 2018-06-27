@@ -27,56 +27,65 @@ func (r *Report) OnEvent(e interface{}) {
 		r.current = r.self
 	}
 
-	if l, ok := e.(events.LogEvent); ok {
-		r.current.Logs = append(r.current.Logs, ReportLogLine{
-			Time:    now,
-			Level:   l.Level,
-			Message: l.Pattern,
-		})
-	} else if s, ok := e.(events.Start); ok {
-		node := &ReportNode{
-			parent:  r.current,
-			ID:      s.ID,
-			Type:    s.Type,
-			Name:    s.Name,
-			StartAt: now,
-		}
-		if r.self.StartAt.IsZero() {
-			r.self.StartAt = now
-		}
+	// Processing event
+	events.IfAny{
+		Log: func(l events.LogEvent) {
+			r.current.Logs = append(r.current.Logs, ReportLogLine{
+				Time:    now,
+				Level:   l.Level,
+				Message: l.Pattern,
+			})
+		},
+		Start: func(s events.Start) {
+			node := &ReportNode{
+				parent:  r.current,
+				ID:      s.ID,
+				Type:    s.Type,
+				Name:    s.Name,
+				StartAt: now,
+			}
+			if r.self.StartAt.IsZero() {
+				r.self.StartAt = now
+			}
 
-		r.current.Elements = append(r.current.Elements, node)
-		r.current = node
-	} else if _, ok := e.(events.Finish); ok {
-		r.current.FinishAt = now
-		r.self.FinishAt = now
-		if r.current.parent != nil {
-			r.current = r.current.parent
-		}
-	} else if rr, ok := e.(events.RemoteRequest); ok {
-		r.current.Remotes = append(r.current.Remotes, ReportRemoteRequest{
-			Time:    now,
-			Type:    rr.Type,
-			URI:     rr.URI,
-			Elapsed: rr.Elapsed,
-			Success: rr.Success,
-		})
-	} else if a, ok := e.(events.AssertDone); ok {
-		if a.Error == nil {
-			r.current.Assertions++
-		} else if r.current.Error == nil {
-			errmsg := a.Error.Error()
-			r.current.Error = &errmsg
-		}
-	} else if v, ok := e.(events.SetVar); ok {
-		if len(r.current.Variables) == 0 {
-			r.current.Variables = map[string]string{}
-		}
+			r.current.Elements = append(r.current.Elements, node)
+			r.current = node
+		},
+		Finish: func(events.Finish) {
+			r.current.FinishAt = now
+			r.self.FinishAt = now
+			if r.current.parent != nil {
+				r.current = r.current.parent
+			}
+		},
+		Remote: func(rr events.RemoteRequest) {
+			r.current.Remotes = append(r.current.Remotes, ReportRemoteRequest{
+				Time:    now,
+				Type:    rr.Type,
+				URI:     rr.URI,
+				Elapsed: rr.Elapsed,
+				Success: rr.Success,
+			})
+		},
+		Assert: func(a events.AssertDone) {
+			if a.Error == nil {
+				r.current.Assertions++
+			} else if r.current.Error == nil {
+				errmsg := a.Error.Error()
+				r.current.Error = &errmsg
+			}
+		},
+		Var: func(v events.SetVar) {
+			if len(r.current.Variables) == 0 {
+				r.current.Variables = map[string]string{}
+			}
 
-		r.current.Variables[v.Key] = v.Value
-	} else if s, ok := e.(events.Sleep); ok {
-		r.current.Sleep += time.Duration(s)
-	}
+			r.current.Variables[v.Key] = v.Value
+		},
+		Sleep: func(s events.Sleep) {
+			r.current.Sleep += time.Duration(s)
+		},
+	}.OnEvent(e)
 }
 
 // Suites returns suites collection
