@@ -34,23 +34,23 @@ func DotRealTimePrinter(stream io.Writer) func(*events.Emitted) {
 	}
 
 	switcher := events.EventRouter{
-		Assert: func(done events.AssertDone) {
+		Assert: func(done events.AssertDone, _ *events.Emitted) {
 			if done.Error == nil {
 				print('.', colorDotOK)
 			} else {
 				print('E', colorDotErr)
 			}
 		},
-		Start: func(events.Start) {
+		Start: func(events.Start, *events.Emitted) {
 			print('<', colorDotSF)
 		},
-		Finish: func(events.Finish) {
+		Finish: func(events.Finish, *events.Emitted) {
 			print('>', colorDotSF)
 		},
-		Sleep: func(events.Sleep) {
+		Sleep: func(events.Sleep, *events.Emitted) {
 			print('z', colorDotSleep)
 		},
-		Remote: func(events.RemoteRequest) {
+		Remote: func(events.RemoteRequest, *events.Emitted) {
 			print('^', colorDotRemote)
 		},
 	}

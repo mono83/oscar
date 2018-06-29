@@ -3,15 +3,15 @@ package events
 // EventRouter contains callbacks, that will be invoked when corresponding event
 // is received by OnEvent func
 type EventRouter struct {
-	Assert          func(AssertDone)
-	Log             func(LogEvent)
-	Remote          func(RemoteRequest)
-	Var             func(SetVar)
-	Sleep           func(Sleep)
-	Start           func(Start)
-	Finish          func(Finish)
-	RegistrationIn  func(RegistrationIn)
-	RegistrationOut func(RegistrationOut)
+	Assert          func(AssertDone, *Emitted)
+	Log             func(LogEvent, *Emitted)
+	Remote          func(RemoteRequest, *Emitted)
+	Var             func(SetVar, *Emitted)
+	Sleep           func(Sleep, *Emitted)
+	Start           func(Start, *Emitted)
+	Finish          func(Finish, *Emitted)
+	RegistrationIn  func(RegistrationIn, *Emitted)
+	RegistrationOut func(RegistrationOut, *Emitted)
 }
 
 // OnEvent runs corresponding callback
@@ -25,39 +25,39 @@ func (i EventRouter) OnEvent(o *Emitted) {
 	switch e.(type) {
 	case AssertDone:
 		if i.Assert != nil {
-			i.Assert(e.(AssertDone))
+			i.Assert(e.(AssertDone), o)
 		}
 	case LogEvent:
 		if i.Log != nil {
-			i.Log(e.(LogEvent))
+			i.Log(e.(LogEvent), o)
 		}
 	case RemoteRequest:
 		if i.Remote != nil {
-			i.Remote(e.(RemoteRequest))
+			i.Remote(e.(RemoteRequest), o)
 		}
 	case SetVar:
 		if i.Var != nil {
-			i.Var(e.(SetVar))
+			i.Var(e.(SetVar), o)
 		}
 	case Sleep:
 		if i.Sleep != nil {
-			i.Sleep(e.(Sleep))
+			i.Sleep(e.(Sleep), o)
 		}
 	case Start:
 		if i.Start != nil {
-			i.Start(e.(Start))
+			i.Start(e.(Start), o)
 		}
 	case Finish:
 		if i.Finish != nil {
-			i.Finish(e.(Finish))
+			i.Finish(e.(Finish), o)
 		}
 	case RegistrationIn:
 		if i.RegistrationIn != nil {
-			i.RegistrationIn(e.(RegistrationIn))
+			i.RegistrationIn(e.(RegistrationIn), o)
 		}
 	case RegistrationOut:
 		if i.RegistrationOut != nil {
-			i.RegistrationOut(e.(RegistrationOut))
+			i.RegistrationOut(e.(RegistrationOut), o)
 		}
 	}
 }

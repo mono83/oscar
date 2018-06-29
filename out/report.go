@@ -29,14 +29,14 @@ func (r *Report) OnEvent(e *events.Emitted) {
 
 	// Processing event
 	events.EventRouter{
-		Log: func(l events.LogEvent) {
+		Log: func(l events.LogEvent, _ *events.Emitted) {
 			r.current.Logs = append(r.current.Logs, ReportLogLine{
 				Time:    now,
 				Level:   l.Level,
 				Message: l.Pattern,
 			})
 		},
-		Start: func(s events.Start) {
+		Start: func(s events.Start, _ *events.Emitted) {
 			node := &ReportNode{
 				parent:  r.current,
 				ID:      s.ID,
@@ -51,14 +51,14 @@ func (r *Report) OnEvent(e *events.Emitted) {
 			r.current.Elements = append(r.current.Elements, node)
 			r.current = node
 		},
-		Finish: func(events.Finish) {
+		Finish: func(events.Finish, *events.Emitted) {
 			r.current.FinishAt = now
 			r.self.FinishAt = now
 			if r.current.parent != nil {
 				r.current = r.current.parent
 			}
 		},
-		Remote: func(rr events.RemoteRequest) {
+		Remote: func(rr events.RemoteRequest, _ *events.Emitted) {
 			r.current.Remotes = append(r.current.Remotes, ReportRemoteRequest{
 				Time:    now,
 				Type:    rr.Type,
@@ -67,7 +67,7 @@ func (r *Report) OnEvent(e *events.Emitted) {
 				Success: rr.Success,
 			})
 		},
-		Assert: func(a events.AssertDone) {
+		Assert: func(a events.AssertDone, _ *events.Emitted) {
 			if a.Error == nil {
 				r.current.Assertions++
 			} else if r.current.Error == nil {
@@ -75,14 +75,14 @@ func (r *Report) OnEvent(e *events.Emitted) {
 				r.current.Error = &errmsg
 			}
 		},
-		Var: func(v events.SetVar) {
+		Var: func(v events.SetVar, _ *events.Emitted) {
 			if len(r.current.Variables) == 0 {
 				r.current.Variables = map[string]string{}
 			}
 
 			r.current.Variables[v.Key] = v.Value
 		},
-		Sleep: func(s events.Sleep) {
+		Sleep: func(s events.Sleep, _ *events.Emitted) {
 			r.current.Sleep += time.Duration(s)
 		},
 	}.OnEvent(e)

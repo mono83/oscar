@@ -11,7 +11,7 @@ import (
 // FullRealTimePrinter returns events receiver, used to print test case flow
 func FullRealTimePrinter(stream io.Writer, showSetValue bool, showTrace bool) func(*events.Emitted) {
 	switcher := events.EventRouter{
-		Start: func(start events.Start) {
+		Start: func(start events.Start, _ *events.Emitted) {
 			if start.Type == "TestSuite" && !showTrace {
 				return
 			}
@@ -21,7 +21,7 @@ func FullRealTimePrinter(stream io.Writer, showSetValue bool, showTrace bool) fu
 				colorLogTestCase,
 			)
 		},
-		Finish: func(finish events.Finish) {
+		Finish: func(finish events.Finish, _ *events.Emitted) {
 			if finish.Type == "TestSuite" && !showTrace {
 				return
 			}
@@ -39,7 +39,7 @@ func FullRealTimePrinter(stream io.Writer, showSetValue bool, showTrace bool) fu
 				)
 			}
 		},
-		Log: func(log events.LogEvent) {
+		Log: func(log events.LogEvent, _ *events.Emitted) {
 			if log.Level == 0 && !showTrace {
 				return
 			}
@@ -52,7 +52,7 @@ func FullRealTimePrinter(stream io.Writer, showSetValue bool, showTrace bool) fu
 	}
 
 	if showSetValue {
-		switcher.Var = func(s events.SetVar) {
+		switcher.Var = func(s events.SetVar, _ *events.Emitted) {
 			prev := ""
 			if s.Previous != nil && *s.Previous != s.Value {
 				prev = " previous value was " + *s.Previous
