@@ -4,9 +4,11 @@ import (
 	"errors"
 	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/events"
+	"github.com/mono83/oscar/impact"
 	"github.com/mono83/oscar/util/jsonencoder"
 	"github.com/mono83/oscar/util/rsa"
 	"github.com/yuin/gopher-lua"
+	"strings"
 )
 
 // TestCaseMeta contains metatable name for userdata structure TestCase in lua
@@ -117,15 +119,28 @@ func (f *fileTestSuite) InjectModule(ctx *oscar.Context, L *lua.LState) {
 
 			ctx.Emit(events.RegistrationBegin{Type: "TestCase", ID: id, Name: name})
 
-			f.cases = append(
-				f.cases,
-				&testcase{
-					id:       id,
-					name:     name,
-					function: clb,
-					state:    f.state,
-				},
-			)
+			c := &testcase{
+				id:       id,
+				imp:      impact.Default,
+				name:     name,
+				function: clb,
+				state:    f.state,
+			}
+
+			f.cases = append(f.cases, c)
+
+			if L.GetTop() > 2 {
+				L.CheckTable(3).ForEach(func(key lua.LValue, value lua.LValue) {
+					if key.Type() == lua.LTString {
+						keyStr := strings.ToLower(strings.TrimSpace(key.String()))
+
+						switch keyStr {
+						case "impact":
+							c.imp = impact.ParseOrDefault(value.String())
+						}
+					}
+				})
+			}
 
 			ctx.Emit(events.RegistrationEnd{Type: "TestCase", Name: name})
 
@@ -137,6 +152,7 @@ func (f *fileTestSuite) InjectModule(ctx *oscar.Context, L *lua.LState) {
 
 			f.setup = &testcase{
 				id:       id(),
+				imp:      impact.Default,
 				name:     oscar.SuiteSetUp,
 				function: clb,
 				state:    f.state,
