@@ -45,8 +45,8 @@ func (t *testcase) Assert(c *oscar.Context) (err error) {
 	return t.err
 }
 
-func buildAssertDoneInterceptor(t *testcase, o func(interface{})) func(interface{}) {
-	return func(i interface{}) {
+func buildAssertDoneInterceptor(t *testcase, o func(*events.Emitted)) func(*events.Emitted) {
+	return func(i *events.Emitted) {
 		events.IfIsAssertDone(i, func(s events.AssertDone) {
 			if s.Error != nil && t.err == nil {
 				t.err = s.Error

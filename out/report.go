@@ -16,7 +16,7 @@ type Report struct {
 }
 
 // OnEvent receives test event and registers it in report
-func (r *Report) OnEvent(e interface{}) {
+func (r *Report) OnEvent(e *events.Emitted) {
 	now := time.Now().UTC()
 
 	r.m.Lock()
@@ -28,7 +28,7 @@ func (r *Report) OnEvent(e interface{}) {
 	}
 
 	// Processing event
-	events.IfAny{
+	events.EventRouter{
 		Log: func(l events.LogEvent) {
 			r.current.Logs = append(r.current.Logs, ReportLogLine{
 				Time:    now,

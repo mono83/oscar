@@ -1,8 +1,8 @@
 package events
 
-// IfAny contains callbacks, that will be invoked when corresponding event
+// EventRouter contains callbacks, that will be invoked when corresponding event
 // is received by OnEvent func
-type IfAny struct {
+type EventRouter struct {
 	Assert          func(AssertDone)
 	Log             func(LogEvent)
 	Remote          func(RemoteRequest)
@@ -15,10 +15,12 @@ type IfAny struct {
 }
 
 // OnEvent runs corresponding callback
-func (i IfAny) OnEvent(e interface{}) {
-	if e == nil {
+func (i EventRouter) OnEvent(o *Emitted) {
+	if o == nil || o.Data == nil {
 		return
 	}
+
+	e := o.Data
 
 	switch e.(type) {
 	case AssertDone:

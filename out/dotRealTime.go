@@ -10,7 +10,7 @@ import (
 )
 
 // DotRealTimePrinter returns events receiver, used to print test case flow
-func DotRealTimePrinter(stream io.Writer) func(interface{}) {
+func DotRealTimePrinter(stream io.Writer) func(*events.Emitted) {
 	cnt := 0
 	max := 60
 	m := sync.Mutex{}
@@ -33,23 +33,29 @@ func DotRealTimePrinter(stream io.Writer) func(interface{}) {
 		m.Unlock()
 	}
 
-	return func(i interface{}) {
-		if a, ok := i.(events.AssertDone); ok {
-			if a.Error == nil {
+	switcher := events.EventRouter{
+		Assert: func(done events.AssertDone) {
+			if done.Error == nil {
 				print('.', colorDotOK)
 			} else {
 				print('E', colorDotErr)
 			}
-		} else if _, ok := i.(events.Start); ok {
+		},
+		Start: func(events.Start) {
 			print('<', colorDotSF)
-		} else if _, ok := i.(events.Finish); ok {
+		},
+		Finish: func(events.Finish) {
 			print('>', colorDotSF)
-		} else if _, ok := i.(events.Sleep); ok {
+		},
+		Sleep: func(events.Sleep) {
 			print('z', colorDotSleep)
-		} else if _, ok := i.(events.RemoteRequest); ok {
+		},
+		Remote: func(events.RemoteRequest) {
 			print('^', colorDotRemote)
-		}
+		},
 	}
+
+	return switcher.OnEvent
 }
 
 var colorDotSF = color.New(color.FgBlack)

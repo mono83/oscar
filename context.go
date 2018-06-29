@@ -12,7 +12,7 @@ import (
 func NewContext() *Context {
 	c := &Context{
 		values: make(map[string]string),
-		events: make(chan interface{}),
+		events: make(chan *events.Emitted),
 	}
 
 	go c.listenEvents()
@@ -28,8 +28,8 @@ type Context struct {
 
 	ownerID int
 	wg      sync.WaitGroup
-	events  chan interface{}
-	OnEvent func(interface{})
+	events  chan *events.Emitted
+	OnEvent func(*events.Emitted)
 }
 
 // Fork builds and returns new child test context
@@ -38,7 +38,7 @@ func (c *Context) Fork(id int) *Context {
 		parent:  c,
 		ownerID: id,
 		values:  make(map[string]string),
-		events:  make(chan interface{}),
+		events:  make(chan *events.Emitted),
 	}
 
 	go c2.listenEvents()
@@ -64,15 +64,19 @@ func (c *Context) Sleep(duration time.Duration) {
 	}
 }
 
+func (c *Context) realEmit(e *events.Emitted) {
+	c.wg.Add(1)
+	c.events <- e
+
+	if c.parent != nil {
+		c.parent.realEmit(e)
+	}
+}
+
 // Emit emits event to registered consumers
 func (c *Context) Emit(t interface{}) {
 	if t != nil {
-		c.wg.Add(1)
-		c.events <- t
-
-		if c.parent != nil {
-			c.parent.Emit(t)
-		}
+		c.realEmit(&events.Emitted{OwnerID: c.ownerID, Time: time.Now(), Data: t})
 	}
 }
 

@@ -9,44 +9,50 @@ import (
 )
 
 // FullRealTimePrinter returns events receiver, used to print test case flow
-func FullRealTimePrinter(stream io.Writer, showSetValue bool, showTrace bool) func(interface{}) {
-	return func(i interface{}) {
-		if s, ok := i.(events.Start); ok {
-			if s.Type == "TestSuite" && !showTrace {
+func FullRealTimePrinter(stream io.Writer, showSetValue bool, showTrace bool) func(*events.Emitted) {
+	switcher := events.EventRouter{
+		Start: func(start events.Start) {
+			if start.Type == "TestSuite" && !showTrace {
 				return
 			}
 			print(
 				stream,
-				fmt.Sprintf("Starting %s %s", s.Type, s.Name),
+				fmt.Sprintf("Starting %s %s", start.Type, start.Name),
 				colorLogTestCase,
 			)
-		} else if s, ok := i.(events.Finish); ok {
-			if s.Type == "TestSuite" && !showTrace {
+		},
+		Finish: func(finish events.Finish) {
+			if finish.Type == "TestSuite" && !showTrace {
 				return
 			}
-			if s.Error == nil {
+			if finish.Error == nil {
 				print(
 					stream,
-					fmt.Sprintf("Sucessfully finished %s %s", s.Type, s.Name),
+					fmt.Sprintf("Sucessfully finished %s %s", finish.Type, finish.Name),
 					colorLogTestCase,
 				)
 			} else {
 				print(
 					stream,
-					fmt.Sprintf("%s \"%s\" completed with an error", s.Type, s.Name),
+					fmt.Sprintf("%s \"%s\" completed with an error", finish.Type, finish.Name),
 					colorLogError,
 				)
 			}
-		} else if e, ok := i.(events.LogEvent); ok {
-			if e.Level == 0 && !showTrace {
+		},
+		Log: func(log events.LogEvent) {
+			if log.Level == 0 && !showTrace {
 				return
 			}
 			c := colorLogDebug
-			if e.Level == 2 {
+			if log.Level == 2 {
 				c = colorLogInfo
 			}
-			print(stream, e.Pattern, c)
-		} else if s, ok := i.(events.SetVar); ok && showSetValue {
+			print(stream, log.Pattern, c)
+		},
+	}
+
+	if showSetValue {
+		switcher.Var = func(s events.SetVar) {
 			prev := ""
 			if s.Previous != nil && *s.Previous != s.Value {
 				prev = " previous value was " + *s.Previous
@@ -55,6 +61,8 @@ func FullRealTimePrinter(stream io.Writer, showSetValue bool, showTrace bool) fu
 			print(stream, fmt.Sprintf("Setting %s := %s%s", s.Key, s.Value, prev), colorLogDebug)
 		}
 	}
+
+	return switcher.OnEvent
 }
 
 var colorLogTime = color.New(color.FgWhite)
