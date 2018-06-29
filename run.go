@@ -17,19 +17,24 @@ func RunSequential(ctx *Context, suites []Suite) error {
 	for _, suite := range suites {
 		sid, sname := suite.ID()
 		suiteContext := ctx.Fork(sid)
-		suiteContext.Emit(events.Start{Type: "TestSuite", ID: sid, Name: sname})
+		suiteContext.Emit(events.Start{Type: "TestSuite", Name: sname})
 
 		// Running INIT func
 		suiteInitFailed := false
 		if c := suite.GetSetUp(); c != nil {
 			cid, cname := c.ID()
 
-			suiteContext.Emit(events.Start{Type: "TestSuiteInit", ID: cid, Name: cname})
-			err := c.Assert(suiteContext)
-			suiteContext.Emit(events.Finish{Type: "TestSuiteInit", ID: cid, Name: cname, Error: err})
+			caseContext := suiteContext.Fork(cid)
+
+			caseContext.Emit(events.Start{Type: "TestSuiteInit", Name: cname})
+			err := c.Assert(caseContext)
+			caseContext.Emit(events.Finish{Type: "TestSuiteInit", Name: cname, Error: err})
 			if err != nil {
 				errorsCnt++
 				suiteInitFailed = true
+			} else {
+				// Copying variables
+				suiteContext.Import(caseContext.values)
 			}
 		}
 
@@ -40,15 +45,15 @@ func RunSequential(ctx *Context, suites []Suite) error {
 
 				caseContext := suiteContext.Fork(cid)
 
-				caseContext.Emit(events.Start{Type: "TestCase", ID: cid, Name: cname})
+				caseContext.Emit(events.Start{Type: "TestCase", Name: cname})
 				err := c.Assert(caseContext)
-				caseContext.Emit(events.Finish{Type: "TestCase", ID: cid, Name: cname, Error: err})
+				caseContext.Emit(events.Finish{Type: "TestCase", Name: cname, Error: err})
 				if err != nil {
 					errorsCnt++
 				}
 			}
 		}
-		suiteContext.Emit(events.Finish{Type: "TestSuite", ID: sid, Name: sname})
+		suiteContext.Emit(events.Finish{Type: "TestSuite", Name: sname})
 	}
 
 	ctx.Wait()

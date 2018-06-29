@@ -145,13 +145,16 @@ func (c *Context) Set(key, value string) {
 	c.Emit(events.SetVar{Key: key, Value: value, Previous: prev})
 }
 
-// SetInitial writes variable values and do not emit event about this
-func (c *Context) SetInitial(m map[string]string) {
+// Import writes variable values and do not emit event about this
+// This method may be used to fill initial data or to copy data from SetUp func
+func (c *Context) Import(m map[string]string) {
 	c.m.Lock()
 	defer c.m.Unlock()
 
-	for k, v := range m {
-		c.values[k] = v
+	if len(m) > 0 {
+		for k, v := range m {
+			c.values[k] = v
+		}
 	}
 }
 

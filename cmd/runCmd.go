@@ -57,7 +57,7 @@ var runCmd = &cobra.Command{
 
 		// Building ROOT testing context
 		context := oscar.NewContext()
-		context.SetInitial(values)
+		context.Import(values)
 		context.Set("lua.engine", "Oscar ][")
 
 		// Adding event dispatcher

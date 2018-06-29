@@ -36,10 +36,10 @@ func (r *Report) OnEvent(e *events.Emitted) {
 				Message: l.Pattern,
 			})
 		},
-		Start: func(s events.Start, _ *events.Emitted) {
+		Start: func(s events.Start, em *events.Emitted) {
 			node := &ReportNode{
 				parent:  r.current,
-				ID:      s.ID,
+				ID:      em.OwnerID,
 				Type:    s.Type,
 				Name:    s.Name,
 				StartAt: now,
