@@ -29,11 +29,13 @@ func (r *Report) OnEvent(e *events.Emitted) {
 
 	// Processing event
 	events.EventRouter{
-		Log: func(l events.LogEvent, _ *events.Emitted) {
-			r.current.Logs = append(r.current.Logs, ReportLogLine{
-				Time:    now,
-				Level:   l.Level,
-				Message: l.Pattern,
+		Log: func(l events.LogEvent, em *events.Emitted) {
+			r.IfFound(em.OwnerID, func(node *ReportNode) {
+				node.Logs = append(node.Logs, ReportLogLine{
+					Time:    now,
+					Level:   l.Level,
+					Message: l.Pattern,
+				})
 			})
 		},
 		Start: func(s events.Start, em *events.Emitted) {
@@ -58,32 +60,41 @@ func (r *Report) OnEvent(e *events.Emitted) {
 				r.current = r.current.parent
 			}
 		},
-		Remote: func(rr events.RemoteRequest, _ *events.Emitted) {
-			r.current.Remotes = append(r.current.Remotes, ReportRemoteRequest{
-				Time:    now,
-				Type:    rr.Type,
-				URI:     rr.URI,
-				Elapsed: rr.Elapsed,
-				Success: rr.Success,
+		Remote: func(rr events.RemoteRequest, em *events.Emitted) {
+			r.IfFound(em.OwnerID, func(node *ReportNode) {
+				node.Remotes = append(node.Remotes, ReportRemoteRequest{
+					Time:    now,
+					Type:    rr.Type,
+					URI:     rr.URI,
+					Elapsed: rr.Elapsed,
+					Success: rr.Success,
+				})
 			})
 		},
-		Assert: func(a events.AssertDone, _ *events.Emitted) {
-			if a.Error == nil {
-				r.current.Assertions++
-			} else if r.current.Error == nil {
-				errmsg := a.Error.Error()
-				r.current.Error = &errmsg
-			}
-		},
-		Var: func(v events.SetVar, _ *events.Emitted) {
-			if len(r.current.Variables) == 0 {
-				r.current.Variables = map[string]string{}
-			}
+		Assert: func(a events.AssertDone, em *events.Emitted) {
+			r.IfFound(em.OwnerID, func(node *ReportNode) {
+				if a.Error == nil {
+					node.Assertions++
+				} else if r.current.Error == nil {
+					msg := a.Error.Error()
+					node.Error = &msg
+				}
 
-			r.current.Variables[v.Key] = v.Value
+			})
 		},
-		Sleep: func(s events.Sleep, _ *events.Emitted) {
-			r.current.Sleep += time.Duration(s)
+		Var: func(v events.SetVar, em *events.Emitted) {
+			r.IfFound(em.OwnerID, func(node *ReportNode) {
+				if len(node.Variables) == 0 {
+					node.Variables = map[string]string{}
+				}
+
+				node.Variables[v.Key] = v.Value
+			})
+		},
+		Sleep: func(s events.Sleep, em *events.Emitted) {
+			r.IfFound(em.OwnerID, func(node *ReportNode) {
+				node.Sleep += time.Duration(s)
+			})
 		},
 	}.OnEvent(e)
 }

@@ -32,8 +32,8 @@ func (r *ReportNode) Find(id int) *ReportNode {
 
 	if len(r.Elements) > 0 {
 		for _, e := range r.Elements {
-			if f := r.Find(id); f != nil {
-				return e
+			if f := e.Find(id); f != nil {
+				return f
 			}
 		}
 	}
