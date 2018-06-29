@@ -24,6 +24,23 @@ type ReportNode struct {
 	Variables  map[string]string
 }
 
+// Find searches for node by ID (including self) and returns it, if found
+func (r *ReportNode) Find(id int) *ReportNode {
+	if r.ID == id {
+		return r
+	}
+
+	if len(r.Elements) > 0 {
+		for _, e := range r.Elements {
+			if f := r.Find(id); f != nil {
+				return e
+			}
+		}
+	}
+
+	return nil
+}
+
 // GetParentID returns parent identifier, if node has parent
 func (r ReportNode) GetParentID() *int {
 	if r.parent != nil {

@@ -93,6 +93,22 @@ func (r *Report) Suites() []*ReportNode {
 	return r.self.Elements
 }
 
+// Find searches for node by ID and returns it, if found
+func (r *Report) Find(id int) *ReportNode {
+	if r.self != nil {
+		return r.self.Find(id)
+	}
+
+	return nil
+}
+
+// IfFound searched for node by ID and invokes callback if found
+func (r *Report) IfFound(id int, callback func(*ReportNode)) {
+	if f := r.Find(id); f != nil && callback != nil {
+		callback(f)
+	}
+}
+
 // Flatten converts report data from tree to linear
 func (r *Report) Flatten() []ReportNode {
 	if r.self == nil {
