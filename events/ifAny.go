@@ -1,15 +1,17 @@
 package events
 
 // IfAny contains callbacks, that will be invoked when corresponding event
-// is received by OnEvent fucn
+// is received by OnEvent func
 type IfAny struct {
-	Assert func(AssertDone)
-	Log    func(LogEvent)
-	Remote func(RemoteRequest)
-	Var    func(SetVar)
-	Sleep  func(Sleep)
-	Start  func(Start)
-	Finish func(Finish)
+	Assert          func(AssertDone)
+	Log             func(LogEvent)
+	Remote          func(RemoteRequest)
+	Var             func(SetVar)
+	Sleep           func(Sleep)
+	Start           func(Start)
+	Finish          func(Finish)
+	RegistrationIn  func(RegistrationIn)
+	RegistrationOut func(RegistrationOut)
 }
 
 // OnEvent runs corresponding callback
@@ -46,6 +48,14 @@ func (i IfAny) OnEvent(e interface{}) {
 	case Finish:
 		if i.Finish != nil {
 			i.Finish(e.(Finish))
+		}
+	case RegistrationIn:
+		if i.RegistrationIn != nil {
+			i.RegistrationIn(e.(RegistrationIn))
+		}
+	case RegistrationOut:
+		if i.RegistrationOut != nil {
+			i.RegistrationOut(e.(RegistrationOut))
 		}
 	}
 }
