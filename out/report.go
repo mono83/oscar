@@ -39,26 +39,20 @@ func (r *Report) OnEvent(e *events.Emitted) {
 			})
 		},
 		Start: func(s events.Start, em *events.Emitted) {
-			node := &ReportNode{
-				parent:  r.current,
-				ID:      em.OwnerID,
-				Type:    s.Type,
-				Name:    s.Name,
-				StartAt: now,
-			}
-			if r.self.StartAt.IsZero() {
-				r.self.StartAt = now
-			}
-
-			r.current.Elements = append(r.current.Elements, node)
-			r.current = node
+			r.IfFound(em.OwnerID, func(node *ReportNode) {
+				node.StartAt = em.Time
+				if r.self.StartAt.IsZero() {
+					r.self.StartAt = em.Time
+				}
+			})
 		},
-		Finish: func(events.Finish, *events.Emitted) {
-			r.current.FinishAt = now
-			r.self.FinishAt = now
-			if r.current.parent != nil {
-				r.current = r.current.parent
-			}
+		Finish: func(_ events.Finish, em *events.Emitted) {
+			r.IfFound(em.OwnerID, func(node *ReportNode) {
+				node.FinishAt = em.Time
+				if r.self.FinishAt.Before(em.Time) {
+					r.self.FinishAt = em.Time
+				}
+			})
 		},
 		Remote: func(rr events.RemoteRequest, em *events.Emitted) {
 			r.IfFound(em.OwnerID, func(node *ReportNode) {
@@ -95,6 +89,22 @@ func (r *Report) OnEvent(e *events.Emitted) {
 			r.IfFound(em.OwnerID, func(node *ReportNode) {
 				node.Sleep += time.Duration(s)
 			})
+		},
+		RegistrationIn: func(rin events.RegistrationBegin, em *events.Emitted) {
+			node := &ReportNode{
+				parent: r.current,
+				ID:     rin.ID,
+				Type:   rin.Type,
+				Name:   rin.Name,
+			}
+
+			r.current.Elements = append(r.current.Elements, node)
+			r.current = node
+		},
+		RegistrationOut: func(rout events.RegistrationEnd, em *events.Emitted) {
+			if r.current.parent != nil {
+				r.current = r.current.parent
+			}
 		},
 	}.OnEvent(e)
 }

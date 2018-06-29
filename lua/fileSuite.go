@@ -3,6 +3,7 @@ package lua
 import (
 	"errors"
 	"github.com/mono83/oscar"
+	"github.com/mono83/oscar/events"
 	"github.com/mono83/oscar/util/jsonencoder"
 	"github.com/mono83/oscar/util/rsa"
 	"github.com/yuin/gopher-lua"
@@ -12,7 +13,7 @@ import (
 const TestCaseMeta = "TestCaseType"
 
 // SuiteFromFiles builds suite using Lua sources file
-func SuiteFromFiles(files ...string) (oscar.Suite, error) {
+func SuiteFromFiles(ctx *oscar.Context, files ...string) (oscar.Suite, error) {
 	if len(files) == 0 {
 		return nil, errors.New("empty files list to load")
 	}
@@ -27,7 +28,10 @@ func SuiteFromFiles(files ...string) (oscar.Suite, error) {
 		state: L,
 	}
 
-	s.InjectModule(L)
+	s.InjectModule(ctx, L)
+
+	// Emitting registration start event
+	ctx.Emit(events.RegistrationBegin{Type: "TestSuite", ID: s.id, Name: s.name})
 
 	// Reading files sequentially
 	for _, file := range files {
@@ -35,6 +39,9 @@ func SuiteFromFiles(files ...string) (oscar.Suite, error) {
 			return nil, err
 		}
 	}
+
+	// Emitting registration done event
+	ctx.Emit(events.RegistrationEnd{Type: "TestSuite", Name: s.name})
 
 	return s, nil
 }
@@ -71,7 +78,7 @@ func (f *fileTestSuite) GetCases() []oscar.Case {
 }
 
 // InjectModule injects TestSuite module (named "oscar") into lua engine
-func (f *fileTestSuite) InjectModule(L *lua.LState) {
+func (f *fileTestSuite) InjectModule(ctx *oscar.Context, L *lua.LState) {
 	L.PreloadModule("oscar", func(L *lua.LState) int {
 		// Registering test case type
 		mt := L.NewTypeMetatable(TestCaseMeta)
@@ -106,15 +113,21 @@ func (f *fileTestSuite) InjectModule(L *lua.LState) {
 			name := L.CheckString(1)
 			clb := L.CheckFunction(2)
 
+			id := id()
+
+			ctx.Emit(events.RegistrationBegin{Type: "TestCase", ID: id, Name: name})
+
 			f.cases = append(
 				f.cases,
 				&testcase{
-					id:       id(),
+					id:       id,
 					name:     name,
 					function: clb,
 					state:    f.state,
 				},
 			)
+
+			ctx.Emit(events.RegistrationEnd{Type: "TestCase", Name: name})
 
 			return 0
 		}

@@ -1,13 +1,14 @@
 package events
 
-// RegistrationIn event emitted on test startup, when test/case/suite is scheduled
-type RegistrationIn struct {
+// RegistrationBegin event emitted on test startup, when test/case/suite is scheduled
+type RegistrationBegin struct {
+	ID   int
 	Type string
 	Name string
 }
 
-// RegistrationOut event emitted on test startup, when test/case/suite is scheduled
-type RegistrationOut struct {
+// RegistrationEnd event emitted on test startup, when test/case/suite is scheduled
+type RegistrationEnd struct {
 	Type string
 	Name string
 }

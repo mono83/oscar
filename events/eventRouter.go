@@ -10,8 +10,8 @@ type EventRouter struct {
 	Sleep           func(Sleep, *Emitted)
 	Start           func(Start, *Emitted)
 	Finish          func(Finish, *Emitted)
-	RegistrationIn  func(RegistrationIn, *Emitted)
-	RegistrationOut func(RegistrationOut, *Emitted)
+	RegistrationIn  func(RegistrationBegin, *Emitted)
+	RegistrationOut func(RegistrationEnd, *Emitted)
 }
 
 // OnEvent runs corresponding callback
@@ -51,13 +51,13 @@ func (i EventRouter) OnEvent(o *Emitted) {
 		if i.Finish != nil {
 			i.Finish(e.(Finish), o)
 		}
-	case RegistrationIn:
+	case RegistrationBegin:
 		if i.RegistrationIn != nil {
-			i.RegistrationIn(e.(RegistrationIn), o)
+			i.RegistrationIn(e.(RegistrationBegin), o)
 		}
-	case RegistrationOut:
+	case RegistrationEnd:
 		if i.RegistrationOut != nil {
-			i.RegistrationOut(e.(RegistrationOut), o)
+			i.RegistrationOut(e.(RegistrationEnd), o)
 		}
 	}
 }

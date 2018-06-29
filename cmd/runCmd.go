@@ -82,9 +82,9 @@ var runCmd = &cobra.Command{
 			var suite oscar.Suite
 			var err error
 			if len(header) > 0 {
-				suite, err = lua.SuiteFromFiles(header, file)
+				suite, err = lua.SuiteFromFiles(context, header, file)
 			} else {
-				suite, err = lua.SuiteFromFiles(file)
+				suite, err = lua.SuiteFromFiles(context, file)
 			}
 
 			if err != nil {
