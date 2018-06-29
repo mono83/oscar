@@ -26,17 +26,19 @@ type Context struct {
 	m      sync.Mutex
 	values map[string]string
 
+	ownerID int
 	wg      sync.WaitGroup
 	events  chan interface{}
 	OnEvent func(interface{})
 }
 
 // Fork builds and returns new child test context
-func (c *Context) Fork() *Context {
+func (c *Context) Fork(id int) *Context {
 	c2 := &Context{
-		parent: c,
-		values: make(map[string]string),
-		events: make(chan interface{}),
+		parent:  c,
+		ownerID: id,
+		values:  make(map[string]string),
+		events:  make(chan interface{}),
 	}
 
 	go c2.listenEvents()

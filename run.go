@@ -15,8 +15,8 @@ func RunSequential(ctx *Context, suites []Suite) error {
 	var errorsCnt int
 
 	for _, suite := range suites {
-		suiteContext := ctx.Fork()
 		sid, sname := suite.ID()
+		suiteContext := ctx.Fork(sid)
 		suiteContext.Emit(events.Start{Type: "TestSuite", ID: sid, Name: sname})
 
 		// Running INIT func
@@ -36,10 +36,9 @@ func RunSequential(ctx *Context, suites []Suite) error {
 		// Iterating over test cases
 		if !suiteInitFailed {
 			for _, c := range suite.GetCases() {
-				// Forking context for test case
-				caseContext := suiteContext.Fork()
-
 				cid, cname := c.ID()
+
+				caseContext := suiteContext.Fork(cid)
 
 				caseContext.Emit(events.Start{Type: "TestCase", ID: cid, Name: cname})
 				err := c.Assert(caseContext)
