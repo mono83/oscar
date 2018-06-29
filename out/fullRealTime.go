@@ -3,6 +3,7 @@ package out
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/events"
 	"io"
 	"time"
@@ -32,11 +33,25 @@ func FullRealTimePrinter(stream io.Writer, showSetValue bool, showTrace bool) fu
 					colorLogTestCase,
 				)
 			} else {
-				print(
-					stream,
-					fmt.Sprintf("%s \"%s\" completed with an error", finish.Type, finish.Name),
-					colorLogError,
-				)
+				if finish.Type == "TestSuiteInit" {
+					print(
+						stream,
+						fmt.Sprintf("Suite initializer completed with an error"),
+						colorLogError,
+					)
+				} else if finish.Error != nil && oscar.IsSkip(finish.Error) {
+					print(
+						stream,
+						fmt.Sprintf("%s \"%s\" completed with an error", finish.Type, finish.Name),
+						colorLogSkip,
+					)
+				} else {
+					print(
+						stream,
+						fmt.Sprintf("%s \"%s\" completed with an error", finish.Type, finish.Name),
+						colorLogError,
+					)
+				}
 			}
 		},
 		Log: func(log events.LogEvent, _ *events.Emitted) {
@@ -70,6 +85,7 @@ var colorLogTime = color.New(color.FgWhite)
 var colorLogDebug = color.New(color.FgHiBlack)
 var colorLogInfo = color.New(color.FgCyan)
 var colorLogTestCase = color.New(color.FgHiGreen)
+var colorLogSkip = color.New(color.FgHiMagenta)
 var colorLogError = color.New(color.FgHiYellow)
 
 func print(stream io.Writer, message string, c *color.Color) {

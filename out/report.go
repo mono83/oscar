@@ -2,6 +2,7 @@ package out
 
 import (
 	"encoding/json"
+	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/events"
 	"sort"
 	"sync"
@@ -72,6 +73,7 @@ func (r *Report) OnEvent(e *events.Emitted) {
 				} else if r.current.Error == nil {
 					msg := a.Error.Error()
 					node.Error = &msg
+					node.IsSkip = node.IsSkip || oscar.IsSkip(a.Error)
 				}
 
 			})

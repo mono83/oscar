@@ -3,6 +3,7 @@ package out
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/events"
 	"io"
 	"sync"
@@ -10,7 +11,7 @@ import (
 )
 
 // DotRealTimePrinter returns events receiver, used to print test case flow
-func DotRealTimePrinter(stream io.Writer) func(*events.Emitted) {
+func DotRealTimePrinter(stream io.Writer, enterAndLeave bool) func(*events.Emitted) {
 	cnt := 0
 	max := 60
 	m := sync.Mutex{}
@@ -37,15 +38,21 @@ func DotRealTimePrinter(stream io.Writer) func(*events.Emitted) {
 		Assert: func(done events.AssertDone, _ *events.Emitted) {
 			if done.Error == nil {
 				print('.', colorDotOK)
+			} else if oscar.IsSkip(done.Error) {
+				print('s', colorDotSkip)
 			} else {
 				print('E', colorDotErr)
 			}
 		},
 		Start: func(events.Start, *events.Emitted) {
-			print('<', colorDotSF)
+			if enterAndLeave {
+				print('<', colorDotSF)
+			}
 		},
 		Finish: func(events.Finish, *events.Emitted) {
-			print('>', colorDotSF)
+			if enterAndLeave {
+				print('>', colorDotSF)
+			}
 		},
 		Sleep: func(events.Sleep, *events.Emitted) {
 			print('z', colorDotSleep)
@@ -62,4 +69,5 @@ var colorDotSF = color.New(color.FgBlack)
 var colorDotOK = color.New(color.FgHiGreen)
 var colorDotErr = color.New(color.FgRed)
 var colorDotSleep = color.New(color.FgGreen)
-var colorDotRemote = color.New(color.FgHiCyan)
+var colorDotRemote = color.New(color.FgGreen)
+var colorDotSkip = color.New(color.FgHiMagenta)

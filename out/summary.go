@@ -44,7 +44,9 @@ func (s summaryTable) EachRow(f func(...table.Cell)) {
 			nameCell = cells.String(" ~ SetUp ~ ")
 		}
 
-		if failed > 0 {
+		if failed > 0 && node.IsSkip {
+			nameCell = cells.ColoredMagentaHi(nameCell)
+		} else if failed > 0 {
 			nameCell = cells.ColoredRedHi(nameCell)
 		} else if "TestSuiteInit" == node.Type {
 			nameCell = cells.ColoredWhite(nameCell)

@@ -27,6 +27,11 @@ func (t *testcase) GetImpact() impact.Level {
 	return t.imp
 }
 
+// GetDependsOn returns slice of identifiers, that must succeed before case will run
+func (t *testcase) GetDependsOn() []int {
+	return nil
+}
+
 func (t *testcase) Assert(c *oscar.Context) (err error) {
 	c.OnEvent = buildAssertDoneInterceptor(t, c.OnEvent)
 

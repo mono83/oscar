@@ -39,18 +39,25 @@ func RunSequential(ctx *Context, suites []Suite) error {
 		}
 
 		// Iterating over test cases
-		if !suiteInitFailed {
-			for _, c := range suite.GetCases() {
-				cid, cname := c.ID()
+		for _, c := range suite.GetCases() {
+			cid, cname := c.ID()
 
-				caseContext := suiteContext.Fork(cid)
+			caseContext := suiteContext.Fork(cid)
 
-				caseContext.Emit(events.Start{Type: "TestCase", Name: cname})
-				err := c.Assert(caseContext)
-				caseContext.Emit(events.Finish{Type: "TestCase", Name: cname, Error: err})
-				if err != nil {
-					errorsCnt++
+			caseContext.Emit(events.Start{Type: "TestCase", Name: cname})
+			var err error
+			if suiteInitFailed {
+				err = Skip{
+					Failed:  SuiteSetUp,
+					Skipped: cname,
 				}
+				caseContext.Emit(events.AssertDone{Error: err})
+			} else {
+				err = c.Assert(caseContext)
+			}
+			caseContext.Emit(events.Finish{Type: "TestCase", Name: cname, Error: err})
+			if err != nil {
+				errorsCnt++
 			}
 		}
 		suiteContext.Emit(events.Finish{Type: "TestSuite", Name: sname})

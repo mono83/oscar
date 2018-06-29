@@ -18,6 +18,7 @@ type ReportNode struct {
 
 	Assertions int
 	Error      *string
+	IsSkip     bool
 	Sleep      time.Duration
 	Logs       []ReportLogLine
 	Remotes    []ReportRemoteRequest
@@ -95,6 +96,19 @@ func (r ReportNode) CountAssertionsFailedRecursive() (failed int) {
 
 	for _, child := range r.Elements {
 		failed += child.CountAssertionsFailedRecursive()
+	}
+
+	return
+}
+
+// CountAssertionsSkippedRecursive returns amount of test skips made by this and child nodes
+func (r ReportNode) CountAssertionsSkippedRecursive() (skipped int) {
+	if r.Error != nil && r.IsSkip {
+		skipped = 1
+	}
+
+	for _, child := range r.Elements {
+		skipped += child.CountAssertionsSkippedRecursive()
 	}
 
 	return

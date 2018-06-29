@@ -10,6 +10,9 @@ type Case interface {
 	// GetImpact returns impact level, induced by test case on remote infrastructure
 	GetImpact() impact.Level
 
+	// GetDependsOn returns slice of identifiers, that must succeed before case will run
+	GetDependsOn() []int
+
 	// Performs test case assertions using provided test context
 	Assert(*Context) error
 }

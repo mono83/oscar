@@ -12,12 +12,13 @@ var summary = `
 	<thead>
 	<tr>
 		<td rowspan="2" colspan="2">Name</td>
-		<td colspan="2">Assertions</td>
+		<td colspan="3">Assertions</td>
 		<td rowspan="2">Remote requests</td>
 		<td colspan="3">Spent time</td>
 	</tr>
 	<tr>
 		<td>Failed</td>
+		<td>Skip</td>
 		<td>Success</td>
 		<td>Total</td>
 		<td>HTTP</td>
@@ -37,6 +38,7 @@ var summary = `
 			{{end}}
 		</td>
 		{{StdCount .CountAssertionsFailedRecursive true}}
+		{{StdCount .CountAssertionsSkippedRecursive true}}
 		{{StdCount .CountAssertionsSuccessRecursive false}}
 		{{StdCount .CountRemoteRequestsRecursive false}}
 		{{StdElapsed .Elapsed }}

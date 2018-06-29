@@ -1,5 +1,6 @@
 package impact
 
+// List of known impact levels
 const (
 	None    Level = 0 // No impact on testing infrastructure, no remote requests
 	Read    Level = 1 // Test case performs shared data reading, generating load on infrastructure
