@@ -150,13 +150,19 @@ func (f *fileTestSuite) InjectModule(ctx *oscar.Context, L *lua.LState) {
 		clbRegSetup := func(L *lua.LState) int {
 			clb := L.CheckFunction(1)
 
+			id := id()
+
+			ctx.Emit(events.RegistrationBegin{Type: "TestSuiteInit", ID: id, Name: oscar.SuiteSetUp})
+
 			f.setup = &testcase{
-				id:       id(),
+				id:       id,
 				imp:      impact.Default,
 				name:     oscar.SuiteSetUp,
 				function: clb,
 				state:    f.state,
 			}
+
+			ctx.Emit(events.RegistrationEnd{Type: "TestSuiteInit", Name: oscar.SuiteSetUp})
 
 			return 0
 		}
