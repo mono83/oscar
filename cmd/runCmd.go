@@ -60,19 +60,15 @@ var runCmd = &cobra.Command{
 		context.Import(values)
 		context.Set("lua.engine", "Oscar ][")
 
-		// Adding event dispatcher
-		d := &out.Dispatcher{}
-		context.OnEvent = d.OnEvent
-
 		// Registering event listeners (logging and etc)
 		reporter := &out.Report{}
-		d.List = append(d.List, reporter.OnEvent)
+		context.Register(reporter.OnEvent)
 
 		if !quiet {
 			if verbose || veryVerbose {
-				d.List = append(d.List, out.FullRealTimePrinter(os.Stdout, veryVerbose, veryVerbose))
+				context.Register(out.FullRealTimePrinter(os.Stdout, veryVerbose, veryVerbose))
 			} else {
-				d.List = append(d.List, out.DotRealTimePrinter(os.Stdout, false))
+				context.Register(out.DotRealTimePrinter(os.Stdout, false))
 			}
 		}
 

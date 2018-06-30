@@ -33,7 +33,13 @@ func (t *testcase) GetDependsOn() []int {
 }
 
 func (t *testcase) Assert(c *oscar.Context) (err error) {
-	c.OnEvent = buildAssertDoneInterceptor(t, c.OnEvent)
+	c.Register(func(emitted *events.Emitted) {
+		events.IfIsAssertDone(emitted, func(s events.AssertDone) {
+			if s.Error != nil && t.err == nil {
+				t.err = s.Error
+			}
+		})
+	})
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -55,18 +61,4 @@ func (t *testcase) Assert(c *oscar.Context) (err error) {
 	c.Wait()
 
 	return t.err
-}
-
-func buildAssertDoneInterceptor(t *testcase, o func(*events.Emitted)) func(*events.Emitted) {
-	return func(i *events.Emitted) {
-		events.IfIsAssertDone(i, func(s events.AssertDone) {
-			if s.Error != nil && t.err == nil {
-				t.err = s.Error
-			}
-		})
-
-		if o != nil {
-			o(i)
-		}
-	}
 }

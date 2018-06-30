@@ -29,7 +29,27 @@ type Context struct {
 	ownerID int
 	wg      sync.WaitGroup
 	events  chan *events.Emitted
-	OnEvent func(*events.Emitted)
+	onEvent func(*events.Emitted)
+}
+
+// Register registers new event listener
+func (c *Context) Register(f func(*events.Emitted)) {
+	if f == nil {
+		return
+	}
+
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	if c.onEvent == nil {
+		c.onEvent = f
+	} else {
+		prev := c.onEvent
+		c.onEvent = func(event *events.Emitted) {
+			f(event)
+			prev(event)
+		}
+	}
 }
 
 // Fork builds and returns new child test context
@@ -49,8 +69,8 @@ func (c *Context) Fork(id int) *Context {
 func (c *Context) listenEvents() {
 	for e := range c.events {
 		c.wg.Done()
-		if c.OnEvent != nil {
-			c.OnEvent(e)
+		if c.onEvent != nil {
+			c.onEvent(e)
 		}
 	}
 }
