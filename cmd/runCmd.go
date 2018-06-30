@@ -63,14 +63,8 @@ var runCmd = &cobra.Command{
 		// Registering event listeners (logging and etc)
 		reporter := &out.Report{}
 		context.Register(reporter.OnEvent)
-
-		if !quiet {
-			if verbose || veryVerbose {
-				context.Register(out.FullRealTimePrinter(os.Stdout, veryVerbose, veryVerbose))
-			} else {
-				context.Register(out.DotRealTimePrinter(os.Stdout, false))
-			}
-		}
+		regCount := &out.RegisteredCount{}
+		context.Register(regCount.BuildListener())
 
 		// Loading LUA files
 		var suites []oscar.Suite
@@ -112,6 +106,15 @@ var runCmd = &cobra.Command{
 					fmt.Println(err)
 				}
 			}()
+		}
+
+		// Registering realtime data renderers
+		if !quiet {
+			if verbose || veryVerbose {
+				context.Register(out.FullRealTimePrinter(os.Stdout, veryVerbose, veryVerbose))
+			} else {
+				context.Register(out.BuildDotRealTimePrinter(os.Stdout, false, regCount.Value))
+			}
 		}
 
 		// Running

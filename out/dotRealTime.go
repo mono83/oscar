@@ -10,13 +10,14 @@ import (
 	"time"
 )
 
-// DotRealTimePrinter returns events receiver, used to print test case flow
-func DotRealTimePrinter(stream io.Writer, enterAndLeave bool) func(*events.Emitted) {
+// BuildDotRealTimePrinter returns events receiver, used to print test case flow
+func BuildDotRealTimePrinter(stream io.Writer, enterAndLeave bool, total int) func(*events.Emitted) {
 	cnt := 0
 	max := 60
 	m := sync.Mutex{}
 
 	startedAt := time.Now()
+	finished := 0
 
 	print := func(s rune, c *color.Color) {
 		str := string(s)
@@ -28,7 +29,24 @@ func DotRealTimePrinter(stream io.Writer, enterAndLeave bool) func(*events.Emitt
 		fmt.Fprint(stream, str)
 		cnt++
 		if cnt == max {
-			fmt.Fprintf(stream, " %.0fs elapsed.\n", time.Now().Sub(startedAt).Seconds())
+			elapsed := time.Now().Sub(startedAt)
+			if total < 1 || elapsed.Seconds() < 0 {
+				fmt.Fprintf(stream, " Elapsed: %.1fs\n", elapsed.Seconds())
+			} else {
+				percent := 100. * float64(finished) / float64(total)
+				if percent < 1 {
+					percent = 1
+				}
+				eta := time.Duration(elapsed.Nanoseconds()*100/int64(percent) - elapsed.Nanoseconds())
+				fmt.Fprintf(
+					stream,
+					" %.0f%% Elapsed: %.1fs ETA: ≈%.0fs\n",
+					percent,
+					elapsed.Seconds(),
+					eta.Seconds(),
+				)
+			}
+
 			cnt = 0
 		}
 		m.Unlock()
@@ -53,6 +71,9 @@ func DotRealTimePrinter(stream io.Writer, enterAndLeave bool) func(*events.Emitt
 			if enterAndLeave {
 				print('>', colorDotSF)
 			}
+			m.Lock()
+			finished++
+			m.Unlock()
 		},
 		Sleep: func(events.Sleep, *events.Emitted) {
 			print('z', colorDotSleep)
