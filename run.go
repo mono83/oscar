@@ -12,7 +12,9 @@ func RunSequential(ctx *Context, suites []Suite) error {
 		return errors.New("empty suites list")
 	}
 
-	var errorsCnt int
+	// Building and attaching test runtime data
+	rt := &RuntimeData{}
+	ctx.Register(rt.BuildListener())
 
 	for _, suite := range suites {
 		sid, sname := suite.ID()
@@ -30,7 +32,6 @@ func RunSequential(ctx *Context, suites []Suite) error {
 			err := c.Assert(caseContext)
 			caseContext.Emit(events.Finish{Type: "TestSuiteInit", Name: cname, Error: err})
 			if err != nil {
-				errorsCnt++
 				suiteInitFailed = true
 			} else {
 				// Copying variables
@@ -53,20 +54,30 @@ func RunSequential(ctx *Context, suites []Suite) error {
 				}
 				caseContext.Emit(events.AssertDone{Error: err})
 			} else {
-				err = c.Assert(caseContext)
+				if deps := c.GetDependsOn(); len(deps) > 0 {
+					for _, d := range deps {
+						if !rt.IsCompletedSuccessfully(d) {
+							err = Skip{
+								Failed:  rt.GetName(d),
+								Skipped: cname,
+							}
+							break
+						}
+					}
+				}
+				if err == nil {
+					err = c.Assert(caseContext)
+				}
 			}
 			caseContext.Emit(events.Finish{Type: "TestCase", Name: cname, Error: err})
-			if err != nil {
-				errorsCnt++
-			}
 		}
 		suiteContext.Emit(events.Finish{Type: "TestSuite", Name: sname})
 	}
 
 	ctx.Wait()
 
-	if errorsCnt > 0 {
-		return fmt.Errorf("%d error(s) encountered", errorsCnt)
+	if rt.TotalErrorsCount > 0 {
+		return fmt.Errorf("%d error(s) encountered", rt.TotalErrorsCount)
 	}
 
 	return nil
