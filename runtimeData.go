@@ -30,10 +30,10 @@ func (r *RuntimeData) BuildListener() func(emitted *events.Emitted) {
 				r.TotalErrorsCount++
 			}
 		},
-		RegistrationIn: func(reg events.RegistrationBegin, _ *events.Emitted) {
+		Start: func(reg events.Start, em *events.Emitted) {
 			r.m.Lock()
 			defer r.m.Unlock()
-			r.Names[reg.ID] = reg.Name
+			r.Names[em.OwnerID] = reg.Name
 		},
 		Finish: func(f events.Finish, em *events.Emitted) {
 			r.m.Lock()

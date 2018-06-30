@@ -11,6 +11,8 @@ import (
 type testcase struct {
 	id       int
 	name     string
+	dep      []int
+	deps     []string
 	imp      impact.Level
 	state    *lua.LState
 	function *lua.LFunction
@@ -29,7 +31,7 @@ func (t *testcase) GetImpact() impact.Level {
 
 // GetDependsOn returns slice of identifiers, that must succeed before case will run
 func (t *testcase) GetDependsOn() []int {
-	return nil
+	return t.dep
 }
 
 func (t *testcase) Assert(c *oscar.Context) (err error) {

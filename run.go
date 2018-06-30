@@ -61,6 +61,7 @@ func RunSequential(ctx *Context, suites []Suite) error {
 								Failed:  rt.GetName(d),
 								Skipped: cname,
 							}
+							caseContext.Emit(events.AssertDone{Error: err})
 							break
 						}
 					}

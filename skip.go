@@ -9,7 +9,7 @@ func (s Skip) Error() string {
 	if s.Failed == SuiteSetUp {
 		return `Test case "` + s.Skipped + `" is skipped, because test suite initializer failed`
 	}
-	return `Test case "` + s.Skipped + `" is skipped, because "` + s.Failed + `" fails"`
+	return `Test case "` + s.Skipped + `" is skipped, because "` + s.Failed + `" fails`
 }
 
 // IsSkip returns true if provided error is skip

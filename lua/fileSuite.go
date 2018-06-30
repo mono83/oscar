@@ -15,7 +15,7 @@ import (
 const TestCaseMeta = "TestCaseType"
 
 // SuiteFromFiles builds suite using Lua sources file
-func SuiteFromFiles(ctx *oscar.Context, files ...string) (oscar.Suite, error) {
+func SuiteFromFiles(c *oscar.Context, files ...string) (oscar.Suite, error) {
 	if len(files) == 0 {
 		return nil, errors.New("empty files list to load")
 	}
@@ -30,6 +30,14 @@ func SuiteFromFiles(ctx *oscar.Context, files ...string) (oscar.Suite, error) {
 		state: L,
 	}
 
+	registered := map[string]int{}
+
+	ctx := c.Fork(s.id)
+	ctx.Register(func(emitted *events.Emitted) {
+		if b, ok := emitted.Data.(events.RegistrationBegin); ok {
+			registered[b.Name] = b.ID
+		}
+	})
 	s.InjectModule(ctx, L)
 
 	// Emitting registration start event
@@ -39,6 +47,19 @@ func SuiteFromFiles(ctx *oscar.Context, files ...string) (oscar.Suite, error) {
 	for _, file := range files {
 		if err := L.DoFile(file); err != nil {
 			return nil, err
+		}
+	}
+
+	// Resolving dependencies
+	for _, tc := range s.cases {
+		if len(tc.deps) > 0 {
+			for _, dep := range tc.deps {
+				f, ok := registered[dep]
+				if !ok {
+					return nil, errors.New("unable to find dependency " + dep + " for " + tc.name)
+				}
+				tc.dep = append(tc.dep, f)
+			}
 		}
 	}
 
@@ -137,6 +158,16 @@ func (f *fileTestSuite) InjectModule(ctx *oscar.Context, L *lua.LState) {
 						switch keyStr {
 						case "impact":
 							c.imp = impact.ParseOrDefault(value.String())
+						case "depends_on", "dependson", "depends", "deps", "dep":
+							if value.Type() == lua.LTString {
+								c.deps = []string{value.String()}
+							} else if value.Type() == lua.LTTable {
+								value.(*lua.LTable).ForEach(func(key lua.LValue, value lua.LValue) {
+									c.deps = append(c.deps, value.String())
+								})
+							} else {
+								L.RaiseError("unsupported value for test dependency")
+							}
 						}
 					}
 				})
