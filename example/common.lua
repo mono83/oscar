@@ -31,3 +31,7 @@ o.setUp(function(tc)
     w = Wrapper:create(tc)
     tc:set("initvar", "zzz")
 end)
+
+o.add("SHA256 test", function(tc)
+    tc:assertEquals(tc:sha256Hex("test string"), "d5579c46dfcc7f18207013e65b44e4cb4e2c2298f4ac457ba8f82743f31e930b")
+end, {impact="none"})

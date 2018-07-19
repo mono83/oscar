@@ -120,8 +120,9 @@ func (f *fileTestSuite) InjectModule(ctx *oscar.Context, L *lua.LState) {
 			"jsonXPath":       lJSONPathExtract,
 			"set":             lSetVar,
 
-			"unix":  lUnix,
-			"sleep": lSleep,
+			"unix":      lUnix,
+			"sleep":     lSleep,
+			"sha256Hex": lSHA256Hex,
 
 			"stringToBase64":    lStringToBase64,
 			"packInt64ToBase64": lPackSliceInt64ToBase64,
