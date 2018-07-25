@@ -193,6 +193,25 @@ type ReportLogLine struct {
 	Message string
 }
 
+// TimeString returns string representation of log event time
+func (r ReportLogLine) TimeString() string {
+	return r.Time.Format("15:04:05.000")
+}
+
+// LevelString returns string representation of log level
+func (r ReportLogLine) LevelString() string {
+	switch r.Level {
+	case 0:
+		return "trace"
+	case 1:
+		return "debug"
+	case 2:
+		return "info"
+	default:
+		return "unknown"
+	}
+}
+
 // ReportRemoteRequest contains remote request event data with event time
 type ReportRemoteRequest struct {
 	Time    time.Time

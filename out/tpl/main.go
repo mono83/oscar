@@ -68,4 +68,6 @@ table td {border: 1px solid #666; border-spacing:0; border-collapse: collapse; m
 
 .table-summary .count.failed {font-weight: bold; color: #E30; background-color: #FD9;}
 .table-vars td {font: normal 9pt "PT Mono", monospace;}
+.table-logs td {font: normal 9pt "PT Mono", monospace;}
+.table-logs td.message {white-space:pre;}
 `

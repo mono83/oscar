@@ -17,6 +17,25 @@ var suite = `
 	</section>
 	{{ end }}
 
+	{{ if .Logs }}
+	<section class="logs">
+		<h3>Logs</h3>
+		<table class="table-logs" border="0">
+			<thead>
+				<tr><td>Time</td><td>Level</td><td>Message</td></tr>
+			</thead>
+			<tbody>
+			{{range .Logs}}<tr class="log-{{ .LevelString }}">
+			<td class="time">{{ .TimeString }}</td>
+			<td class="type">{{ .LevelString }}</td>
+			<td class="message">{{ .Message }}</td>
+			</tr>
+			{{ end }}
+			</tbody>
+		</table>
+	</section>
+	{{ end }}
+
 	{{ if .Remotes }}
 	<section class="remotes">
 		<h3>Remote requests</h2>
