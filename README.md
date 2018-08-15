@@ -54,6 +54,37 @@ oscar run simple.lua
 * `--filter|-f` Filters test cases by name using regular expression
 * `--lib|-l` Loads library lua file
 
+## Test cases metadata and dependencies
+
+There is possibility to provide additional metadata to test case:
+
+```lua
+-- Import Oscar module
+local o = require("oscar")
+
+-- Register test case
+o.add(
+    name, -- Test case name
+    callback, -- Test case body
+    metadata -- Additional metadata
+)
+```
+
+Metadata is simple Lua table with next keys:
+
+| Key | Description | Example |
+| --- | ----------- | ------- |
+| `impact` | Describes test case impact. | `{impact="read"}` |
+| `depends` | Describes test case dependency (by name). If that test case fails, current wont be invoked | `depends="Simple GET with JSON"}` |
+
+
+Current `impact` levels:
+*  `"read"` - test case only reads data, it can be safely at any time
+* `"create"` - test case creates new entities
+* `"modify"` - test case modifies existing entities and it can be not safe to invoke multiple test instances
+
+Currently `impact field is ignored but in next releases there can be command line flags that utilizes this option
+
 ## Variables and placeholders
 
 Placeholders have syntax `${name}` and are automatically replaced in most method:
@@ -157,9 +188,27 @@ Parses last `http.response.body` as JSON, finds value under XPath expression and
 
 ### HTTP Requests
 
+Syntax: `:httpGet(url)`
+
+Performs HTTP request using `GET` method and writes response data into variables.
+
+| Variable name | Meaning |
+| ------------- | --------|
+| `http.elapsed` | Time (in milliseconds), taken by request|
+| `http.response.code` | HTTP status code |
+| `http.response.length` | Response body length, in bytes |
+| `http.response.body` | Full response body |
+| `http.response.header.<name>` | Multiple values. Each response header will have own key |
+| `http.request.url` | HTTP request URL |
+| `http.request.length` | Request body length, in bytes |
+| `http.request.body` | Full request body |
+| `http.response.request.<name>` | Multiple values. Each request header will have own key |
+
+
+
 Syntax: `:httpPost(url, body)`
 
-Performs HTTP request and writes response data into variables.
+Performs HTTP request using `POST` method and writes response data into variables.
 
 | Variable name | Meaning |
 | ------------- | --------| 
