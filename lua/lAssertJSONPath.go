@@ -20,7 +20,6 @@ func lAssertJSONPath(L *lua.LState) int {
 	// Extracting json path
 	actual, err := jsonpath.Extract([]byte(body), xpath)
 	if err != nil {
-		tc.AssertFinished(err)
 		L.RaiseError(err.Error())
 	} else {
 		tc.Tracef(`Assert "%s" (actual, left) equals "%s"`, actual, expected)
@@ -32,8 +31,7 @@ func lAssertJSONPath(L *lua.LState) int {
 				expected,
 				doc,
 			)
-			tc.AssertFinished(err)
-			L.RaiseError("Assertion failed")
+			L.RaiseError(err.Error())
 		} else {
 			tc.AssertFinished(nil)
 			tc.Tracef(`Assertion OK. "%s" == "%s"`, xpath, expected)
