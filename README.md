@@ -66,7 +66,7 @@ local o = require("oscar")
 o.add(
     name, -- Test case name
     callback, -- Test case body
-    metadata -- Additional metadata
+    metadata -- Additional metadata, optional
 )
 ```
 
@@ -75,7 +75,7 @@ Metadata is simple Lua table with next keys:
 | Key | Description | Example |
 | --- | ----------- | ------- |
 | `impact` | Describes test case impact. | `{impact="read"}` |
-| `depends` | Describes test case dependency (by name). If that test case fails, current wont be invoked | `depends="Simple GET with JSON"}` |
+| `depends` | Describes test case dependency (by name). If that test case fails, current wont be invoked | `{depends="Simple GET with JSON"}` |
 
 
 Current `impact` levels:
