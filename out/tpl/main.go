@@ -70,4 +70,12 @@ table td {border: 1px solid #666; border-spacing:0; border-collapse: collapse; m
 .table-vars td {font: normal 9pt "PT Mono", monospace;}
 .table-logs td {font: normal 9pt "PT Mono", monospace;}
 .table-logs td.message {white-space:pre;}
+
+.table-logs thead td {font-weight: normal; border: 0; background-color: #03A9F4; color: white;}
+.table-logs td {border: 0; margin: 0; padding: 2px; vertical-align: text-top;}
+.table-logs .type {text-align:center;}
+.table-logs .log-info .type {background-color: #81D4FA;}
+.table-logs .log-debug .type {background-color: #EEEEEE;}
+.table-logs .log-info .message {font-weight: bold;}
+.table-logs .log-trace td { color: #B0BEC5;}
 `
