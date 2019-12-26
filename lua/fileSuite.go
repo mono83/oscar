@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/events"
-	"github.com/mono83/oscar/impact"
 	"github.com/mono83/oscar/util/jsonencoder"
 	"github.com/mono83/oscar/util/rsa"
 	"github.com/yuin/gopher-lua"
@@ -143,7 +142,6 @@ func (f *fileTestSuite) InjectModule(ctx *oscar.Context, L *lua.LState) {
 
 			c := &testcase{
 				id:       id,
-				imp:      impact.Default,
 				name:     name,
 				function: clb,
 				state:    f.state,
@@ -157,8 +155,6 @@ func (f *fileTestSuite) InjectModule(ctx *oscar.Context, L *lua.LState) {
 						keyStr := strings.ToLower(strings.TrimSpace(key.String()))
 
 						switch keyStr {
-						case "impact":
-							c.imp = impact.ParseOrDefault(value.String())
 						case "depends_on", "dependson", "depends", "deps", "dep":
 							if value.Type() == lua.LTString {
 								c.deps = []string{value.String()}
@@ -188,7 +184,6 @@ func (f *fileTestSuite) InjectModule(ctx *oscar.Context, L *lua.LState) {
 
 			f.setup = &testcase{
 				id:       id,
-				imp:      impact.Default,
 				name:     oscar.SuiteSetUp,
 				function: clb,
 				state:    f.state,

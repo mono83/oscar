@@ -74,16 +74,8 @@ Metadata is simple Lua table with next keys:
 
 | Key | Description | Example |
 | --- | ----------- | ------- |
-| `impact` | Describes test case impact. | `{impact="read"}` |
 | `depends` | Describes test case dependency (by name). If that test case fails, current wont be invoked | `{depends="Simple GET with JSON"}` |
 
-
-Current `impact` levels:
-*  `"read"` - test case only reads data, it can be safely at any time
-* `"create"` - test case creates new entities
-* `"modify"` - test case modifies existing entities and it can be not safe to invoke multiple test instances
-
-Currently `impact field is ignored but in next releases there can be command line flags that utilizes this option
 
 ## Variables and placeholders
 

@@ -6,4 +6,4 @@ o.add("Base64 encoding transformations", function(tc)
     tc:assertEquals("SGVsbG8sIHdvcmxk", tc:stringToBase64("${value}"))
 
     tc:assertEquals("AAAAAAAAAAEAAAAAAAAAAv//////////", tc:packInt64ToBase64(1, 2, -1))
-end, {impact="none"})
+end)

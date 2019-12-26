@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/events"
-	"github.com/mono83/oscar/impact"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -13,7 +12,6 @@ type testcase struct {
 	name     string
 	dep      []int
 	deps     []string
-	imp      impact.Level
 	state    *lua.LState
 	function *lua.LFunction
 	err      error
@@ -22,11 +20,6 @@ type testcase struct {
 // ID returns test case name and identifier
 func (t *testcase) ID() (int, string) {
 	return t.id, t.name
-}
-
-// GetImpact returns impact level, induced by test case on remote infrastructure
-func (t *testcase) GetImpact() impact.Level {
-	return t.imp
 }
 
 // GetDependsOn returns slice of identifiers, that must succeed before case will run
