@@ -8,7 +8,7 @@ clean: ## Clears environment
 
 test: ## Runs unit tests
 	@echo $(shell date +'%H:%M:%S') "\033[0;32mRunning unit tests\033[0m"
-	@CGO_ENABLED=0 go test ./...
+	@CGO_ENABLED=0 go test -tags=http ./...
 
 deps: ## Download required dependencies
 	@echo $(shell date +'%H:%M:%S') "\033[0;32mDownloading dependencies\033[0m"
