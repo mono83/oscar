@@ -1,12 +1,14 @@
 package lua
 
 import (
-	"github.com/mono83/oscar/events"
-	"github.com/yuin/gopher-lua"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/mono83/oscar/events"
+	"github.com/mono83/oscar/util"
+	"github.com/yuin/gopher-lua"
 )
 
 func lHTTPGet(L *lua.LState) int {
@@ -28,12 +30,12 @@ func lHTTPGet(L *lua.LState) int {
 	// Building HTTP request
 	tc.Tracef("Preparing HTTP GET request to %s", url)
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header = headers
 	if err != nil {
 		tc.AssertFinished(err)
 		L.RaiseError(err.Error())
 		return 0
 	}
+	req.Header = headers
 
 	// Filling request data into vars
 	tc.Set("http.request.url", url)
@@ -70,6 +72,7 @@ func lHTTPGet(L *lua.LState) int {
 	tc.Set("http.response.length", strconv.Itoa(len(bts)))
 	tc.Set("http.response.code", strconv.Itoa(resp.StatusCode))
 	tc.Set("http.response.body", string(bts))
+	tc.Set("http.response.ray", util.RayExtractOrEmpty(resp.Header))
 	for name, hh := range resp.Header {
 		for _, h := range hh {
 			if len(h) > 0 {
