@@ -31,7 +31,8 @@ func SuiteFromString(c *oscar.Context, name, source string) (oscar.Suite, error)
 			registered[b.Name] = b.ID
 		}
 	})
-	s.InjectModule(ctx, L)
+	// Injecting module into Lua runtime
+	injectModule(s, ctx, L)
 
 	// Emitting registration start event
 	ctx.Emit(events.RegistrationBegin{Type: "TestSuite", ID: s.id, Name: s.name})
