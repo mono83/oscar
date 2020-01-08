@@ -31,7 +31,7 @@ func lHTTPGet(L *lua.LState) int {
 	req.Header = headers
 	if err != nil {
 		tc.AssertFinished(err)
-		L.RaiseError(err.Error())
+		lRaiseContextError(L, tc, "HTTP Request build error: %s", err.Error())
 		return 0
 	}
 
@@ -51,7 +51,7 @@ func lHTTPGet(L *lua.LState) int {
 	tc.Emit(events.RemoteRequest{Type: "http+get", URI: url, Elapsed: time.Now().Sub(before), Success: err == nil})
 	if err != nil {
 		tc.AssertFinished(err)
-		L.RaiseError(err.Error())
+		lRaiseContextError(L, tc, "HTTP Request failed: %s", err.Error())
 		return 0
 	}
 	defer resp.Body.Close()
@@ -59,7 +59,7 @@ func lHTTPGet(L *lua.LState) int {
 	bts, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		tc.AssertFinished(err)
-		L.RaiseError(err.Error())
+		lRaiseContextError(L, tc, "Error reading HTTP response: %s", err.Error())
 		return 0
 	}
 

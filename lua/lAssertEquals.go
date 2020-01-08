@@ -14,7 +14,9 @@ func lAssertEquals(L *lua.LState) int {
 	tc.Tracef(`Assert "%s" (actual, left) equals "%s"`, actual, expected)
 	success := actual == expected
 	if !success {
-		L.RaiseError(
+		lRaiseContextError(
+			L,
+			tc,
 			`Assertion failed. "%s" (actual, left) != "%s".%s`,
 			actual,
 			expected,

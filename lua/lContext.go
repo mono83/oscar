@@ -16,3 +16,13 @@ func lContext(L *lua.LState) *oscar.Context {
 
 	panic("Unable to read testing context from Lua stack")
 }
+
+// lRaiseContextError emits error message to logs
+// and raises standard lua error
+func lRaiseContextError(L *lua.LState, ctx *oscar.Context, pattern string, args ...interface{}) {
+	// Emitting error message
+	ctx.Errorf(pattern, args...)
+
+	// Raising Lua error
+	L.RaiseError(pattern, args...)
+}

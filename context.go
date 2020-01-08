@@ -133,6 +133,11 @@ func (c *Context) Infof(pattern string, a ...interface{}) {
 	c.Emit(events.LogEvent{Level: 2, Pattern: fmt.Sprintf(pattern, a...)})
 }
 
+// Errorf sends ERROR event without interpolation but with sprintf formatting
+func (c *Context) Errorf(pattern string, a ...interface{}) {
+	c.Emit(events.LogEvent{Level: 3, Pattern: fmt.Sprintf(pattern, a...)})
+}
+
 // Get returns variable value
 func (c *Context) Get(key string) string {
 	c.m.Lock()

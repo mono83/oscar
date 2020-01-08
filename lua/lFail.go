@@ -22,7 +22,7 @@ func lFail(L *lua.LState) int {
 		}
 	}
 
-	L.RaiseError(msg, args...)
+	lRaiseContextError(L, tc, msg, args)
 
 	return 0
 }

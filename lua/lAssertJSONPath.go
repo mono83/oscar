@@ -1,7 +1,6 @@
 package lua
 
 import (
-	"fmt"
 	"github.com/mono83/oscar/util/jsonpath"
 	"github.com/yuin/gopher-lua"
 )
@@ -20,18 +19,19 @@ func lAssertJSONPath(L *lua.LState) int {
 	// Extracting json path
 	actual, err := jsonpath.Extract([]byte(body), xpath)
 	if err != nil {
-		L.RaiseError(err.Error())
+		lRaiseContextError(L, tc, "JSON XPATH error: %s", err.Error())
 	} else {
 		tc.Tracef(`Assert "%s" (actual, left) equals "%s"`, actual, expected)
 		success := actual == expected
 		if !success {
-			err := fmt.Errorf(
+			lRaiseContextError(
+				L,
+				tc,
 				`JSON XPath assertion failed. "%s" (actual, left) != "%s".%s`,
 				actual,
 				expected,
 				doc,
 			)
-			L.RaiseError(err.Error())
 		} else {
 			tc.AssertFinished(nil)
 			tc.Tracef(`Assertion OK. "%s" == "%s"`, xpath, expected)
