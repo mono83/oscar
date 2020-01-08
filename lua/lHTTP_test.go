@@ -32,14 +32,11 @@ end, {depends="Simple GET with JSON"})
 
 func TestHTTPMethods(t *testing.T) {
 	// Initializing events collector
-	col := &collector{Debug: true}
+	col := &collector{}
 
 	// Building context
 	ctx := oscar.NewContext()
 	ctx.Register(col.OnEvent)
-	ctx.Import(map[string]string{
-		"who": "Test runner",
-	})
 
 	// Loading
 	if suite, err := SuiteFromString(ctx, "http", httpSuite); assert.NoError(t, err) {
