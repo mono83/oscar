@@ -1,10 +1,11 @@
 package out
 
 import (
-	"github.com/mono83/table"
-	"github.com/mono83/table/cells"
 	"io"
 	"time"
+
+	"github.com/mono83/table"
+	"github.com/mono83/table/cells"
 )
 
 // PrintSummary outputs summary table into provided stream using provided report data

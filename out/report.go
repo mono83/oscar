@@ -2,11 +2,12 @@ package out
 
 import (
 	"encoding/json"
-	"github.com/mono83/oscar"
-	"github.com/mono83/oscar/events"
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/mono83/oscar"
+	"github.com/mono83/oscar/events"
 )
 
 // Report contains aggregated data about tests
@@ -14,6 +15,11 @@ type Report struct {
 	m       sync.Mutex
 	self    *ReportNode
 	current *ReportNode
+
+	Statistics struct {
+		TotalEvents int
+		Assertions  int
+	}
 }
 
 // OnEvent receives test event and registers it in report
@@ -22,6 +28,8 @@ func (r *Report) OnEvent(e *events.Emitted) {
 
 	r.m.Lock()
 	defer r.m.Unlock()
+
+	r.Statistics.TotalEvents++
 
 	if r.current == nil {
 		r.self = &ReportNode{Type: "Report", Name: "Report"}
@@ -67,6 +75,7 @@ func (r *Report) OnEvent(e *events.Emitted) {
 			})
 		},
 		Assert: func(a events.AssertDone, em *events.Emitted) {
+			r.Statistics.Assertions++
 			r.IfFound(em.OwnerID, func(node *ReportNode) {
 				if a.Error == nil {
 					node.Assertions++
@@ -75,7 +84,6 @@ func (r *Report) OnEvent(e *events.Emitted) {
 					node.Error = &msg
 					node.IsSkip = node.IsSkip || oscar.IsSkip(a.Error)
 				}
-
 			})
 		},
 		Var: func(v events.SetVar, em *events.Emitted) {
