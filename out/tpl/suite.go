@@ -19,7 +19,7 @@ var suite = `
 
 	{{ if .Logs }}
 	<section class="logs">
-		<h3>Logs</h3>
+		<h3>Trace</h3>
 		<table class="table-logs" border="0">
 			<thead>
 				<tr><td>Time</td><td>Level</td><td>Message</td></tr>

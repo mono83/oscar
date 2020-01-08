@@ -207,6 +207,8 @@ func (r ReportLogLine) LevelString() string {
 		return "debug"
 	case 2:
 		return "info"
+	case 3:
+		return "error"
 	default:
 		return "unknown"
 	}

@@ -61,6 +61,8 @@ func FullRealTimePrinter(stream io.Writer, showSetValue bool, showTrace bool) fu
 			c := colorLogDebug
 			if log.Level == 2 {
 				c = colorLogInfo
+			} else if log.Level == 3 {
+				c = colorLogError
 			}
 			print(stream, log.Pattern, c)
 		},
