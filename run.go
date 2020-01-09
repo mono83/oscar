@@ -48,20 +48,12 @@ func RunSequential(ctx *Context, suites []Suite) error {
 			caseContext.Emit(events.Start{Type: "TestCase", Name: cname})
 			var err error
 			if suiteInitFailed {
-				err = Skip{
-					Failed:  SuiteSetUp,
-					Skipped: cname,
-				}
-				caseContext.Emit(events.AssertDone{Error: err})
+				caseContext.Emit(events.Skip{Failed: SuiteSetUp, Skipped: cname})
 			} else {
 				if deps := c.GetDependsOn(); len(deps) > 0 {
 					for _, d := range deps {
 						if !rt.IsCompletedSuccessfully(d) {
-							err = Skip{
-								Failed:  rt.GetName(d),
-								Skipped: cname,
-							}
-							caseContext.Emit(events.AssertDone{Error: err})
+							caseContext.Emit(events.Skip{Failed: rt.GetName(d), Skipped: cname})
 							break
 						}
 					}

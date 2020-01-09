@@ -17,18 +17,39 @@ var suite = `
 	</section>
 	{{ end }}
 
-	{{ if .Logs }}
+	{{ if .Events }}
 	<section class="logs">
 		<h3>Trace</h3>
 		<table class="table-logs" border="0">
 			<thead>
-				<tr><td>Time</td><td>Level</td><td>Message</td></tr>
+				<tr><td>Time</td><td>Event</td><td colspan="3">Payload</td></tr>
 			</thead>
 			<tbody>
-			{{range .Logs}}<tr class="log-{{ .LevelString }}">
-			<td class="time">{{ .TimeString }}</td>
-			<td class="type">{{ .LevelString }}</td>
-			<td class="message">{{ .Message }}</td>
+			{{range .Events}}
+			{{ if eq .TypeString "RemoteRequest" }}
+			<tr class="{{ .TypeString }}">
+				<td class="time">{{ .TimeString }}</td>
+				<td class="type success-{{ .Data.Success }}">{{ .Data.Type }}</td>
+				<td class="elapsed">{{ .Data.ElapsedString }}</td>
+				<td class="ray">{{ .Data.Ray }}</td>
+				<td class="url">{{ .Data.URI }}</td>
+			{{ else if eq .TypeString "AssertDone" }}
+			<tr class="{{ .TypeString }}">
+				<td class="time">{{ .TimeString }}</td>
+				<td class="type success-{{ .Data.Success }}">{{ .Data.Operation }}</td>
+				{{ if .Data.Success }}
+				<td class="expected" title="Expected value" colspan="2">{{ .Data.Expected }}</td>
+				{{ else }}
+				<td class="expected" title="Expected value">{{ .Data.Expected }}</td>
+				<td class="actual" title="Actual value">{{ .Data.Actual }}</td>
+				{{ end }}
+				<td class="qualifier">{{ .Data.Qualifier }} {{ .Data.Doc }}&nbsp;</td>
+			{{ else if eq .TypeString "LogEvent" }}
+			<tr class="{{ .TypeString }}-{{ .Data.LevelString }}">
+				<td class="time">{{ .TimeString }}</td>
+				<td class="type">{{ .Data.LevelString }}</td>
+				<td class="message" colspan="3">{{ .Data.Pattern }}</td>
+			{{ end }}
 			</tr>
 			{{ end }}
 			</tbody>
@@ -36,7 +57,7 @@ var suite = `
 	</section>
 	{{ end }}
 
-	{{ if .Remotes }}
+	{{ if .Events.RemoteRequests }}
 	<section class="remotes">
 		<h3>Remote requests</h2>
 		<table class="table-remotes" border="0">
@@ -48,7 +69,7 @@ var suite = `
 			</tr>
 			</thead>
 			<tbody>
-			{{range .Remotes}}<tr>
+			{{range .Events.RemoteRequests}}<tr>
 				<td class="type">{{ .Type }}</td>
 				<td class="url">{{ .URI }}</td>
 				<td>{{ .Success }}</td>

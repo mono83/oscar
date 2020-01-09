@@ -1,6 +1,7 @@
 package lua
 
 import (
+	"github.com/mono83/oscar"
 	"github.com/yuin/gopher-lua"
 )
 
@@ -22,7 +23,16 @@ func lFail(L *lua.LState) int {
 		}
 	}
 
-	lRaiseContextError(L, tc, msg, args)
+	throwLua(L, tc, msg, args...)
 
 	return 0
+}
+
+// throwLua emits error message to logs and raises standard lua error
+func throwLua(L *lua.LState, ctx *oscar.Context, pattern string, args ...interface{}) {
+	// Emitting error message
+	ctx.Errorf(pattern, args...)
+
+	// Raising Lua error
+	L.RaiseError(pattern, args...)
 }

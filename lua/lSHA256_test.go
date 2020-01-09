@@ -1,9 +1,10 @@
 package lua
 
 import (
+	"testing"
+
 	"github.com/mono83/oscar"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 var shaSuite = `

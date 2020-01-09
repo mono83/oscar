@@ -74,10 +74,14 @@ table td {border: 1px solid #666; border-spacing:0; border-collapse: collapse; m
 .table-logs thead td {font-weight: normal; border: 0; background-color: #03A9F4; color: white;}
 .table-logs td {border: 0; margin: 0; padding: 2px; vertical-align: text-top;}
 .table-logs .type {text-align:center;}
-.table-logs .log-info .type {background-color: #81D4FA;}
-.table-logs .log-error .type {background-color: #FABF81;}
-.table-logs .log-debug .type {background-color: #EEEEEE;}
-.table-logs .log-error .message {font-weight: bold;}
-.table-logs .log-info .message {font-weight: bold;}
-.table-logs .log-trace td { color: #B0BEC5;}
+.table-logs .LogEvent-info .type {background-color: #81D4FA;}
+.table-logs .LogEvent-error .type {background-color: #FABF81;}
+.table-logs .LogEvent-debug .type {background-color: #EEEEEE;}
+.table-logs .LogEvent-error .message {font-weight: bold;}
+.table-logs .LogEvent-info .message {font-weight: bold;}
+.table-logs .LogEvent-trace td { color: #B0BEC5;}
+.table-logs .success-true { background-color: #a7fba5; }
+.table-logs .success-false { background-color: #fbb5a5; }
+.table-logs .RemoteRequest .elapsed, .table-logs .RemoteRequest .ray { width: 1px; white-space: nowrap; }
+.table-logs .AssertDone .actual, .table-logs .AssertDone .expected { width: 1px; white-space: nowrap; }
 `

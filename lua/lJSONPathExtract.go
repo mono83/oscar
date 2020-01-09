@@ -14,7 +14,7 @@ func lJSONPathExtract(L *lua.LState) int {
 
 	value, err := jsonpath.Extract([]byte(source), xpath)
 	if err != nil {
-		lRaiseContextError(L, tc, "JSON XPATH error: %s", err.Error())
+		throwLua(L, tc, "JSON XPATH error: %s", err.Error())
 		return 0
 	}
 

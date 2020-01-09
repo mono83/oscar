@@ -2,10 +2,11 @@ package lua
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/events"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 var simpleSuite = `
@@ -67,12 +68,10 @@ func TestStringSuite(t *testing.T) {
 					assert.Equal(t, "Variable $custom contains ", col.Logs.Info[3])
 					assert.Equal(t, "This is Test runner again", col.Logs.Info[4])
 				}
-				if assert.Len(t, col.Logs.Trace, 5, "collector.Logs.Trace") {
+				if assert.Len(t, col.Logs.Trace, 3, "collector.Logs.Trace") {
 					assert.Equal(t, `Assert "foo" (actual, left) equals "foo"`, col.Logs.Trace[0])
 					assert.Equal(t, `Assert "1" (actual, left) equals "1"`, col.Logs.Trace[1])
-					assert.Equal(t, `Reading JSON XPath "$.user[0].id"`, col.Logs.Trace[2])
-					assert.Equal(t, `Assert "42" (actual, left) equals "42"`, col.Logs.Trace[3])
-					assert.Equal(t, `Assertion OK. "$.user[0].id" == "42"`, col.Logs.Trace[4])
+					assert.Equal(t, `Assert $.user[0].id "42" (actual, left) equals "42"`, col.Logs.Trace[2])
 				}
 			}
 		}
@@ -82,7 +81,10 @@ func TestStringSuite(t *testing.T) {
 type collector struct {
 	Debug bool // If true outputs all logs to stdout
 
-	TestCaseCount int // Contains amount of test cases been run
+	AssertionsCount int // // Contains amount of assertions made
+	TestCaseCount   int // Contains amount of test cases been run
+
+	Failures []error
 
 	Logs struct {
 		Trace []string // Contains all messages with level 0 (trace)
@@ -93,6 +95,8 @@ type collector struct {
 func (c *collector) OnEvent(e *events.Emitted) {
 	if e != nil && e.Data != nil {
 		switch e.Data.(type) {
+		case events.Failure:
+			c.Failures = append(c.Failures, e.Data.(events.Failure))
 		case events.Start:
 			start := e.Data.(events.Start)
 			if start.Type == "TestCase" {
@@ -112,6 +116,8 @@ func (c *collector) OnEvent(e *events.Emitted) {
 			if c.Debug {
 				fmt.Println(log.Level, log.Pattern)
 			}
+		case events.AssertDone:
+			c.AssertionsCount++
 		}
 	}
 }

@@ -26,12 +26,15 @@ func (r *RuntimeData) BuildListener() func(emitted *events.Emitted) {
 	r.Invocations = map[int]bool{}
 
 	er := events.EventRouter{
-		Assert: func(done events.AssertDone, emitted *events.Emitted) {
-			if done.Error != nil {
-				r.m.Lock()
-				defer r.m.Unlock()
-				r.Errors = append(r.Errors, done.Error)
-			}
+		Failure: func(f events.Failure, _ *events.Emitted) {
+			r.m.Lock()
+			r.Errors = append(r.Errors, f)
+			r.m.Unlock()
+		},
+		Skip: func(s events.Skip, _ *events.Emitted) {
+			r.m.Lock()
+			r.Errors = append(r.Errors, s)
+			r.m.Unlock()
 		},
 		Start: func(reg events.Start, em *events.Emitted) {
 			r.m.Lock()

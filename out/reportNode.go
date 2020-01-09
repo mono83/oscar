@@ -2,6 +2,8 @@ package out
 
 import (
 	"time"
+
+	"github.com/mono83/oscar/events"
 )
 
 // ReportNode is a report node
@@ -20,8 +22,7 @@ type ReportNode struct {
 	Error      *string
 	IsSkip     bool
 	Sleep      time.Duration
-	Logs       []ReportLogLine
-	Remotes    []ReportRemoteRequest
+	Events     events.EmittedBuffer
 	Variables  map[string]string
 }
 
@@ -116,7 +117,7 @@ func (r ReportNode) CountAssertionsSkippedRecursive() (skipped int) {
 
 // CountRemoteRequestsRecursive returns amount of remote requests, done by this node and its childs
 func (r ReportNode) CountRemoteRequestsRecursive() int {
-	count := len(r.Remotes)
+	count := r.Events.RemoteRequestsCount()
 
 	for _, child := range r.Elements {
 		count += child.CountRemoteRequestsRecursive()
@@ -127,11 +128,7 @@ func (r ReportNode) CountRemoteRequestsRecursive() int {
 
 // ElapsedRemoteRecursive returns total elapsed time, spent by current node and it's childs on remote requests
 func (r ReportNode) ElapsedRemoteRecursive() time.Duration {
-	var total time.Duration
-
-	for _, rr := range r.Remotes {
-		total += rr.Elapsed
-	}
+	total := r.Events.RemoteRequestsElapsed()
 
 	for _, child := range r.Elements {
 		total += child.ElapsedRemoteRecursive()
@@ -172,53 +169,12 @@ func (r ReportNode) Flatten() []ReportNode {
 }
 
 // RemoteRequestsRecursive return slice of remote requests, obtained recursively from current node and sub nodes
-func (r ReportNode) RemoteRequestsRecursive() []ReportRemoteRequest {
-	var requests []ReportRemoteRequest
-
-	if len(r.Remotes) > 0 {
-		requests = append(requests, r.Remotes...)
-	}
+func (r ReportNode) RemoteRequestsRecursive() []events.RemoteRequest {
+	requests := r.Events.RemoteRequests()
 
 	for _, child := range r.Elements {
 		requests = append(requests, child.RemoteRequestsRecursive()...)
 	}
 
 	return requests
-}
-
-// ReportLogLine contains logging data with event time
-type ReportLogLine struct {
-	Time    time.Time
-	Level   byte
-	Message string
-}
-
-// TimeString returns string representation of log event time
-func (r ReportLogLine) TimeString() string {
-	return r.Time.Format("15:04:05.000")
-}
-
-// LevelString returns string representation of log level
-func (r ReportLogLine) LevelString() string {
-	switch r.Level {
-	case 0:
-		return "trace"
-	case 1:
-		return "debug"
-	case 2:
-		return "info"
-	case 3:
-		return "error"
-	default:
-		return "unknown"
-	}
-}
-
-// ReportRemoteRequest contains remote request event data with event time
-type ReportRemoteRequest struct {
-	Time    time.Time
-	Type    string
-	URI     string
-	Elapsed time.Duration
-	Success bool
 }

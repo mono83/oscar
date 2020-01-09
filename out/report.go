@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/events"
 )
 
@@ -24,15 +23,13 @@ type Report struct {
 
 // OnEvent receives test event and registers it in report
 func (r *Report) OnEvent(e *events.Emitted) {
-	now := time.Now().UTC()
-
 	r.m.Lock()
 	defer r.m.Unlock()
 
 	r.Statistics.TotalEvents++
 
 	if r.current == nil {
-		r.self = &ReportNode{Type: "Report", Name: "Report"}
+		r.self = &ReportNode{Type: "Report", Name: "Report", Events: []events.Emitted{}}
 		r.current = r.self
 	}
 
@@ -40,11 +37,7 @@ func (r *Report) OnEvent(e *events.Emitted) {
 	events.EventRouter{
 		Log: func(l events.LogEvent, em *events.Emitted) {
 			r.IfFound(em.OwnerID, func(node *ReportNode) {
-				node.Logs = append(node.Logs, ReportLogLine{
-					Time:    now,
-					Level:   l.Level,
-					Message: l.Pattern,
-				})
+				node.Events.Add(*em)
 			})
 		},
 		Start: func(s events.Start, em *events.Emitted) {
@@ -65,25 +58,26 @@ func (r *Report) OnEvent(e *events.Emitted) {
 		},
 		Remote: func(rr events.RemoteRequest, em *events.Emitted) {
 			r.IfFound(em.OwnerID, func(node *ReportNode) {
-				node.Remotes = append(node.Remotes, ReportRemoteRequest{
-					Time:    now,
-					Type:    rr.Type,
-					URI:     rr.URI,
-					Elapsed: rr.Elapsed,
-					Success: rr.Success,
-				})
+				node.Events.Add(*em)
 			})
 		},
 		Assert: func(a events.AssertDone, em *events.Emitted) {
 			r.Statistics.Assertions++
 			r.IfFound(em.OwnerID, func(node *ReportNode) {
-				if a.Error == nil {
-					node.Assertions++
-				} else if r.current.Error == nil {
-					msg := a.Error.Error()
-					node.Error = &msg
-					node.IsSkip = node.IsSkip || oscar.IsSkip(a.Error)
-				}
+				node.Events.Add(*em)
+			})
+		},
+		Failure: func(f events.Failure, em *events.Emitted) {
+			err := f.Error()
+			r.IfFound(em.OwnerID, func(node *ReportNode) {
+				node.Error = &err
+			})
+		},
+		Skip: func(s events.Skip, em *events.Emitted) {
+			err := s.Error()
+			r.IfFound(em.OwnerID, func(node *ReportNode) {
+				node.Error = &err
+				node.IsSkip = true
 			})
 		},
 		Var: func(v events.SetVar, em *events.Emitted) {
@@ -106,6 +100,7 @@ func (r *Report) OnEvent(e *events.Emitted) {
 				ID:     rin.ID,
 				Type:   rin.Type,
 				Name:   rin.Name,
+				Events: []events.Emitted{},
 			}
 
 			r.current.Elements = append(r.current.Elements, node)

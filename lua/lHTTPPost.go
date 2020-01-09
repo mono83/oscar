@@ -35,8 +35,7 @@ func lHTTPPost(L *lua.LState) int {
 	tc.Tracef("Preparing HTTP POST request to %s", url)
 	req, err := http.NewRequest("POST", url, bytes.NewBufferString(body))
 	if err != nil {
-		tc.AssertFinished(err)
-		lRaiseContextError(L, tc, "HTTP Request build error: %s", err.Error())
+		throwLua(L, tc, "HTTP Request build error: %s", err.Error())
 		return 0
 	}
 	req.Header = headers
@@ -56,29 +55,30 @@ func lHTTPPost(L *lua.LState) int {
 	// Sending HTTP request
 	before := time.Now()
 	resp, err := httpClient.Do(req)
-	tc.Emit(events.RemoteRequest{Type: "http+post", URI: url, Elapsed: time.Now().Sub(before), Success: err == nil})
 	if err != nil {
-		tc.AssertFinished(err)
-		lRaiseContextError(L, tc, "HTTP Request failed: %s", err.Error())
+		tc.Emit(events.RemoteRequest{Type: "http+post", URI: url, Elapsed: time.Now().Sub(before)})
+		throwLua(L, tc, "HTTP Request failed: %s", err.Error())
 		return 0
 	}
 	defer resp.Body.Close()
 
 	bts, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		tc.AssertFinished(err)
-		lRaiseContextError(L, tc, "Error reading HTTP response: %s", err.Error())
+		tc.Emit(events.RemoteRequest{Type: "http+post", URI: url, Elapsed: time.Now().Sub(before)})
+		throwLua(L, tc, "Error reading HTTP response: %s", err.Error())
 		return 0
 	}
 
 	delta := time.Now().Sub(before)
 
 	// Filling response data into vars
+	ray := util.RayExtractOrEmpty(resp.Header)
+	tc.Emit(events.RemoteRequest{Type: "http+post", URI: url, Elapsed: time.Now().Sub(before), Ray: ray, Success: true})
 	tc.Set("http.elapsed", strconv.Itoa(int(1000*delta.Seconds())))
 	tc.Set("http.response.length", strconv.Itoa(len(bts)))
 	tc.Set("http.response.code", strconv.Itoa(resp.StatusCode))
 	tc.Set("http.response.body", string(bts))
-	tc.Set("http.response.ray", util.RayExtractOrEmpty(resp.Header))
+	tc.Set("http.response.ray", ray)
 	for name, hh := range resp.Header {
 		for _, h := range hh {
 			if len(h) > 0 {
@@ -94,6 +94,5 @@ func lHTTPPost(L *lua.LState) int {
 		resp.StatusCode,
 	)
 
-	tc.AssertFinished(nil)
 	return 0
 }

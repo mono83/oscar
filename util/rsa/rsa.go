@@ -25,7 +25,7 @@ func Generate(len int, ttl time.Duration) (*RSA, error) {
 	// certificate template
 	start := time.Now()
 	template := &x509.Certificate{
-		IsCA: true,
+		IsCA:                  true,
 		BasicConstraintsValid: true,
 		SubjectKeyId:          []byte{1, 2, 3},
 		SerialNumber:          big.NewInt(1234),

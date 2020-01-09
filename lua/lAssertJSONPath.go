@@ -14,28 +14,18 @@ func lAssertJSONPath(L *lua.LState) int {
 	// Reading response body
 	body := tc.Get("http.response.body")
 
-	tc.Tracef(`Reading JSON XPath "%s"`, xpath)
-
 	// Extracting json path
 	actual, err := jsonpath.Extract([]byte(body), xpath)
+
 	if err != nil {
-		lRaiseContextError(L, tc, "JSON XPATH error: %s", err.Error())
+		throwLua(L, tc, "JSON XPATH error on %s - %s", xpath, err.Error())
 	} else {
-		tc.Tracef(`Assert "%s" (actual, left) equals "%s"`, actual, expected)
-		success := actual == expected
-		if !success {
-			lRaiseContextError(
-				L,
-				tc,
-				`JSON XPath assertion failed. "%s" (actual, left) != "%s".%s`,
-				actual,
-				expected,
-				doc,
-			)
-		} else {
-			tc.AssertFinished(nil)
-			tc.Tracef(`Assertion OK. "%s" == "%s"`, xpath, expected)
-		}
+		_ = assertion{
+			Actual:    actual,
+			Expected:  expected,
+			Qualifier: xpath,
+			Doc:       doc,
+		}.Equals(L, tc)
 	}
 
 	return 0

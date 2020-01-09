@@ -2,10 +2,11 @@ package oscar
 
 import (
 	"fmt"
-	"github.com/mono83/oscar/events"
 	"regexp"
 	"sync"
 	"time"
+
+	"github.com/mono83/oscar/events"
 )
 
 // NewContext builds and returns context to be used in tests
@@ -110,32 +111,37 @@ func (c *Context) Wait() {
 
 // Tracef sends TRACE event without interpolation but with sprintf formatting
 func (c *Context) Tracef(pattern string, a ...interface{}) {
-	c.Emit(events.LogEvent{Level: 0, Pattern: fmt.Sprintf(pattern, a...)})
+	c.Emit(events.LogEvent{Level: events.LogLevelTrace, Pattern: fmt.Sprintf(pattern, a...)})
 }
 
 // Debug sends DEBUG event with variables interpolation
 func (c *Context) Debug(message string) {
-	c.Emit(events.LogEvent{Level: 1, Pattern: c.Interpolate(message)})
+	c.Emit(events.LogEvent{Level: events.LogLevelDebug, Pattern: c.Interpolate(message)})
 }
 
 // Debugf sends DEBUG event without interpolation but with sprintf formatting
 func (c *Context) Debugf(pattern string, a ...interface{}) {
-	c.Emit(events.LogEvent{Level: 1, Pattern: fmt.Sprintf(pattern, a...)})
+	c.Emit(events.LogEvent{Level: events.LogLevelDebug, Pattern: fmt.Sprintf(pattern, a...)})
 }
 
 // Info sends INFO event with variables interpolation
 func (c *Context) Info(message string) {
-	c.Emit(events.LogEvent{Level: 2, Pattern: c.Interpolate(message)})
+	c.Emit(events.LogEvent{Level: events.LogLevelInfo, Pattern: c.Interpolate(message)})
 }
 
 // Infof sends INFO event without interpolation but with sprintf formatting
 func (c *Context) Infof(pattern string, a ...interface{}) {
-	c.Emit(events.LogEvent{Level: 2, Pattern: fmt.Sprintf(pattern, a...)})
+	c.Emit(events.LogEvent{Level: events.LogLevelInfo, Pattern: fmt.Sprintf(pattern, a...)})
 }
 
 // Errorf sends ERROR event without interpolation but with sprintf formatting
 func (c *Context) Errorf(pattern string, a ...interface{}) {
-	c.Emit(events.LogEvent{Level: 3, Pattern: fmt.Sprintf(pattern, a...)})
+	c.Emit(events.LogEvent{Level: events.LogLevelError, Pattern: fmt.Sprintf(pattern, a...)})
+}
+
+// Fail emits Failure event
+func (c *Context) Fail(message string) {
+	c.Emit(events.Failure(message))
 }
 
 // Get returns variable value
@@ -184,8 +190,15 @@ func (c *Context) Import(m map[string]string) {
 }
 
 // AssertFinished sends event about finished assertion
-func (c *Context) AssertFinished(err error) {
-	c.Emit(events.AssertDone{Error: err})
+func (c *Context) AssertFinished(success bool, operation, qualifier, doc string, actual, expected interface{}) {
+	c.Emit(events.AssertDone{
+		Success:   success,
+		Operation: operation,
+		Actual:    actual,
+		Expected:  expected,
+		Qualifier: qualifier,
+		Doc:       doc,
+	})
 }
 
 var iregex = regexp.MustCompile(`\${([\w.-]+)}`)

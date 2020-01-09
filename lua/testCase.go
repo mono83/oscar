@@ -2,6 +2,7 @@ package lua
 
 import (
 	"fmt"
+
 	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/events"
 	"github.com/yuin/gopher-lua"
@@ -29,17 +30,23 @@ func (t *testcase) GetDependsOn() []int {
 
 func (t *testcase) Assert(c *oscar.Context) (err error) {
 	c.Register(func(emitted *events.Emitted) {
-		events.IfIsAssertDone(emitted, func(s events.AssertDone) {
-			if s.Error != nil && t.err == nil {
-				t.err = s.Error
-			}
+		events.IfFailure(emitted, func(f events.Failure) {
+			t.err = f
 		})
 	})
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = fmt.Errorf("%+v", r)
-			c.AssertFinished(err)
+			// Unfolding panic
+			var message string
+			if e, ok := r.(error); ok {
+				// This is an error
+				message = e.Error()
+			} else {
+				// This is not an error
+				message = fmt.Sprintf("%+v", r)
+			}
+			c.Fail(message)
 		}
 	}()
 

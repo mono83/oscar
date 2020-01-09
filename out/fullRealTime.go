@@ -2,11 +2,11 @@ package out
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/mono83/oscar"
-	"github.com/mono83/oscar/events"
 	"io"
 	"time"
+
+	"github.com/fatih/color"
+	"github.com/mono83/oscar/events"
 )
 
 // FullRealTimePrinter returns events receiver, used to print test case flow
@@ -39,7 +39,7 @@ func FullRealTimePrinter(stream io.Writer, showSetValue bool, showTrace bool) fu
 						fmt.Sprintf("Suite initializer completed with an error"),
 						colorLogError,
 					)
-				} else if finish.Error != nil && oscar.IsSkip(finish.Error) {
+				} else if finish.Error != nil && events.IsSkip(finish.Error) {
 					print(
 						stream,
 						fmt.Sprintf("%s \"%s\" completed with an error", finish.Type, finish.Name),
@@ -55,13 +55,13 @@ func FullRealTimePrinter(stream io.Writer, showSetValue bool, showTrace bool) fu
 			}
 		},
 		Log: func(log events.LogEvent, _ *events.Emitted) {
-			if log.Level == 0 && !showTrace {
+			if log.Level == events.LogLevelTrace && !showTrace {
 				return
 			}
 			c := colorLogDebug
-			if log.Level == 2 {
+			if log.Level == events.LogLevelInfo {
 				c = colorLogInfo
-			} else if log.Level == 3 {
+			} else if log.Level == events.LogLevelError {
 				c = colorLogError
 			}
 			print(stream, log.Pattern, c)
@@ -91,7 +91,7 @@ var colorLogSkip = color.New(color.FgHiMagenta)
 var colorLogError = color.New(color.FgHiYellow)
 
 func print(stream io.Writer, message string, c *color.Color) {
-	fmt.Fprintf(
+	_, _ = fmt.Fprintf(
 		stream,
 		"%s %s\n",
 		colorLogTime.Sprint(time.Now().Format("15:04:05")),
