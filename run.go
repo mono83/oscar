@@ -2,7 +2,7 @@ package oscar
 
 import (
 	"errors"
-	"fmt"
+
 	"github.com/mono83/oscar/events"
 )
 
@@ -77,9 +77,5 @@ func RunSequential(ctx *Context, suites []Suite) error {
 
 	ctx.Wait()
 
-	if rt.TotalErrorsCount > 0 {
-		return fmt.Errorf("%d error(s) encountered", rt.TotalErrorsCount)
-	}
-
-	return nil
+	return rt.GetErrors()
 }

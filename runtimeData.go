@@ -1,16 +1,19 @@
 package oscar
 
 import (
-	"github.com/mono83/oscar/events"
+	"fmt"
 	"sync"
+
+	"github.com/hashicorp/go-multierror"
+	"github.com/mono83/oscar/events"
 )
 
 // RuntimeData contains data about current test run
 type RuntimeData struct {
 	m sync.Mutex
 
-	// TotalErrorsCount contains total errors count
-	TotalErrorsCount int
+	// All errors been caught
+	Errors []error
 	// Names contains map of test case/suite names
 	Names map[int]string
 	// Invocations contains flags for success/failure invocations
@@ -27,7 +30,7 @@ func (r *RuntimeData) BuildListener() func(emitted *events.Emitted) {
 			if done.Error != nil {
 				r.m.Lock()
 				defer r.m.Unlock()
-				r.TotalErrorsCount++
+				r.Errors = append(r.Errors, done.Error)
 			}
 		},
 		Start: func(reg events.Start, em *events.Emitted) {
@@ -72,4 +75,17 @@ func (r *RuntimeData) IsCompletedSuccessfully(id int) bool {
 	}
 
 	return false
+}
+
+// GetErrors returns all errors as single wrapper
+func (r *RuntimeData) GetErrors() error {
+	// Building multierror
+	me := multierror.Error{
+		Errors: r.Errors,
+		ErrorFormat: func(errors []error) string {
+			return fmt.Sprintf("%d error(s) encountered", len(errors))
+		},
+	}
+
+	return me.ErrorOrNil()
 }
