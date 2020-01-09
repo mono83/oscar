@@ -1,4 +1,4 @@
-package oscar
+package events
 
 // Skip is an error, emitted, when test case was skipped
 type Skip struct {
@@ -6,7 +6,7 @@ type Skip struct {
 }
 
 func (s Skip) Error() string {
-	if s.Failed == SuiteSetUp {
+	if s.Failed == "__INIT__" {
 		return `Test case "` + s.Skipped + `" is skipped, because test suite initializer failed`
 	}
 	return `Test case "` + s.Skipped + `" is skipped, because "` + s.Failed + `" fails`

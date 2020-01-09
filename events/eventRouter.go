@@ -4,6 +4,8 @@ package events
 // is received by OnEvent func
 type EventRouter struct {
 	Assert          func(AssertDone, *Emitted)
+	Failure         func(Failure, *Emitted)
+	Skip            func(Skip, *Emitted)
 	Log             func(LogEvent, *Emitted)
 	Remote          func(RemoteRequest, *Emitted)
 	Var             func(SetVar, *Emitted)
@@ -26,6 +28,14 @@ func (i EventRouter) OnEvent(o *Emitted) {
 	case AssertDone:
 		if i.Assert != nil {
 			i.Assert(e.(AssertDone), o)
+		}
+	case Failure:
+		if i.Failure != nil {
+			i.Failure(e.(Failure), o)
+		}
+	case Skip:
+		if i.Skip != nil {
+			i.Skip(e.(Skip), o)
 		}
 	case LogEvent:
 		if i.Log != nil {
