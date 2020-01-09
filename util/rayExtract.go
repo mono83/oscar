@@ -27,7 +27,7 @@ func RayExtract(h http.Header) (string, bool) {
 	return "", false
 }
 
-// RayExtract method reads tracing identifiers from http headers response.
+// RayExtractOrEmpty method reads tracing identifiers from http headers response.
 func RayExtractOrEmpty(h http.Header) string {
 	v, _ := RayExtract(h)
 	return v
