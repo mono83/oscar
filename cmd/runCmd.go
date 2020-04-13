@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/fatih/color"
 	"github.com/mono83/oscar"
@@ -41,23 +40,32 @@ var runCmd = &cobra.Command{
 
 		values := map[string]string{}
 		if len(environmentFile) > 0 {
-			// Reading environment file
-			bts, err := ioutil.ReadFile(environmentFile)
+			files, err := filepath.Glob(environmentFile)
 			if err != nil {
 				return err
 			}
 
-			i, err := ini.Load(bts)
-			if err != nil {
-				return err
-			}
+			// Reading environment files
+			for _, file := range files {
+				bts, err := ioutil.ReadFile(file)
+				if err != nil {
+					return err
+				}
 
-			sec, err := i.GetSection("")
-			if err != nil {
-				return err
-			}
+				i, err := ini.Load(bts)
+				if err != nil {
+					return err
+				}
 
-			values = sec.KeysHash()
+				sec, err := i.GetSection("")
+				if err != nil {
+					return err
+				}
+
+				for k, v := range sec.KeysHash() {
+					values[k] = v
+				}
+			}
 		}
 
 		// Vars
@@ -89,13 +97,9 @@ var runCmd = &cobra.Command{
 		// Loading LUA files
 		var suites []oscar.Suite
 		for _, filePattern := range args {
-			files := []string{filePattern}
-			if strings.Contains(filePattern, "*") {
-				var err error
-				files, err = filepath.Glob(filePattern)
-				if err != nil {
-					return err
-				}
+			files, err := filepath.Glob(filePattern)
+			if err != nil {
+				return err
 			}
 
 			for _, file := range files {
