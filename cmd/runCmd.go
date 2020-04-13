@@ -3,14 +3,17 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/fatih/color"
 	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/lua"
 	"github.com/mono83/oscar/out"
 	"github.com/spf13/cobra"
 	"gopkg.in/ini.v1"
-	"io/ioutil"
-	"os"
 )
 
 var verbose bool
@@ -68,19 +71,30 @@ var runCmd = &cobra.Command{
 
 		// Loading LUA files
 		var suites []oscar.Suite
-		for _, file := range args {
-			var suite oscar.Suite
-			var err error
-			if len(header) > 0 {
-				suite, err = lua.SuiteFromFiles(context, header, file)
-			} else {
-				suite, err = lua.SuiteFromFiles(context, file)
+		for _, filePattern := range args {
+			files := []string{filePattern}
+			if strings.Contains(filePattern, "*") {
+				var err error
+				files, err = filepath.Glob(filePattern)
+				if err != nil {
+					return err
+				}
 			}
 
-			if err != nil {
-				return err
+			for _, file := range files {
+				var suite oscar.Suite
+				var err error
+				if len(header) > 0 {
+					suite, err = lua.SuiteFromFiles(context, header, file)
+				} else {
+					suite, err = lua.SuiteFromFiles(context, file)
+				}
+
+				if err != nil {
+					return err
+				}
+				suites = append(suites, suite)
 			}
-			suites = append(suites, suite)
 		}
 
 		if !quiet {
