@@ -164,6 +164,11 @@ Syntax: `:set(name, value)`
 
 Sets new `value` for variable, identified by `name`
 
+Syntax: `:export(name, value)`
+
+Sets new `value` for variable, identified by `name`. This value is set on top-level scope and can be exported 
+to ini file.
+
 
 ### Assertions
 

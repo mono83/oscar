@@ -23,9 +23,10 @@ func NewContext() *Context {
 
 // Context is test invocation context
 type Context struct {
-	parent *Context
-	m      sync.Mutex
-	values map[string]string
+	parent  *Context
+	m       sync.Mutex
+	values  map[string]string
+	exports map[string]string
 
 	ownerID int
 	wg      sync.WaitGroup
@@ -149,17 +150,31 @@ func (c *Context) Get(key string) string {
 	c.m.Lock()
 	defer c.m.Unlock()
 
+	// Reading own values
 	if len(c.values) > 0 {
 		if value, ok := c.values[key]; ok {
 			return value
 		}
 	}
 
+	// Reading values from parent
 	if c.parent != nil {
 		return c.parent.Get(key)
 	}
 
+	// Reading values from export variables
+	if len(c.exports) > 0 {
+		if value, ok := c.exports[key]; ok {
+			return value
+		}
+	}
+
 	return ""
+}
+
+// GetExport returns map of export variables
+func (c *Context) GetExport() map[string]string {
+	return c.exports
 }
 
 // Set places new variable value
@@ -174,6 +189,21 @@ func (c *Context) Set(key, value string) {
 
 	c.values[key] = value
 	c.Emit(events.SetVar{Key: key, Value: value, Previous: prev})
+}
+
+// SetExport adds variable on top scope level
+func (c *Context) SetExport(key, value string) {
+	if c.parent != nil {
+		c.parent.SetExport(key, value)
+	} else {
+		c.m.Lock()
+		defer c.m.Unlock()
+
+		if len(c.exports) == 0 {
+			c.exports = map[string]string{}
+		}
+		c.exports[key] = value
+	}
 }
 
 // Import writes variable values and do not emit event about this

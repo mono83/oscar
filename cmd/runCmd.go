@@ -21,6 +21,7 @@ var veryVerbose bool
 var quiet bool
 var noAnsi bool
 var environmentFile string
+var exportFile string
 var filter string
 var header string
 var outJSONFile string
@@ -99,25 +100,41 @@ var runCmd = &cobra.Command{
 
 		if !quiet {
 			defer func() {
-				fmt.Fprintln(os.Stdout, "")
-				fmt.Fprintln(os.Stdout, "")
+				_, _ = fmt.Fprintln(os.Stdout, "")
+				_, _ = fmt.Fprintln(os.Stdout, "")
 				out.PrintTestCaseErrorsSummary(os.Stdout, reporter)
-				fmt.Fprintln(os.Stdout, "")
-				fmt.Fprintln(os.Stdout, "")
+				_, _ = fmt.Fprintln(os.Stdout, "")
+				_, _ = fmt.Fprintln(os.Stdout, "")
 				out.PrintSummary(os.Stdout, reporter)
-				fmt.Fprintln(os.Stdout, "")
+				_, _ = fmt.Fprintln(os.Stdout, "")
 			}()
 		}
 
 		if len(outJSONFile) > 0 {
 			defer func() {
-				ioutil.WriteFile(outJSONFile, []byte(reporter.JSON()), 0644)
+				_ = ioutil.WriteFile(outJSONFile, []byte(reporter.JSON()), 0644)
 			}()
 		}
 		if len(outHTMLPath) > 0 {
 			defer func() {
 				if err := out.WriteHTMLFiles(outHTMLPath, reporter); err != nil {
 					fmt.Println(err)
+				}
+			}()
+		}
+		if len(exportFile) > 0 {
+			defer func() {
+				exportVars := context.GetExport()
+				if len(exportVars) > 0 {
+					cfg := ini.Empty()
+					s := cfg.Section("")
+					for k, v := range exportVars {
+						_, _ = s.NewKey(k, v)
+					}
+
+					if err := cfg.SaveTo(exportFile); err != nil {
+						fmt.Println(err)
+					}
 				}
 			}()
 		}
@@ -142,6 +159,7 @@ func init() {
 	runCmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "Suppress any output")
 	runCmd.Flags().BoolVar(&noAnsi, "no-ansi", false, "Disable ANSI color output")
 	runCmd.Flags().StringVarP(&environmentFile, "env", "e", "", "Root variables, passed to TestSuite")
+	runCmd.Flags().StringVarP(&exportFile, "exports", "x", "", "Filename to export variables, marked for export")
 	runCmd.Flags().StringVarP(&filter, "filter", "f", "", "Test case name filter, regex")
 	runCmd.Flags().StringVarP(&header, "lib", "l", "", "Add library lua file with helper functions")
 	runCmd.Flags().StringVarP(&outJSONFile, "json-report", "j", "", "JSON report filename")

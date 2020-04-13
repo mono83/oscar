@@ -1,12 +1,13 @@
 package lua
 
 import (
+	"strings"
+
 	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/events"
 	"github.com/mono83/oscar/util/jsonencoder"
 	"github.com/mono83/oscar/util/rsa"
 	lua "github.com/yuin/gopher-lua"
-	"strings"
 )
 
 // funcsTestCase contains references to all functions,
@@ -24,6 +25,7 @@ var funcsTestCase = map[string]lua.LGFunction{
 	"jsonPath":        lJSONPathExtract,
 	"jsonXPath":       lJSONPathExtract,
 	"set":             lSetVar,
+	"export":          lExportVar,
 
 	"unix":      lUnix,
 	"sleep":     lSleep,

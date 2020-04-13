@@ -12,3 +12,14 @@ func lSetVar(L *lua.LState) int {
 
 	return 0
 }
+
+// lExportVar sets export variable
+func lExportVar(L *lua.LState) int {
+	tc := lContext(L)
+	key := L.CheckString(2)
+	value := L.ToString(3)
+
+	tc.SetExport(key, value)
+
+	return 0
+}
