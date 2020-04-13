@@ -230,6 +230,21 @@ Invokes JSON XPath query from `path` on `body` and returns invocation result. In
  -- v = "10"
  ``` 
  
+ ### SQL
+ 
+ Currently, only MySQL driver is supported.
+ To enable SQL support by Oscar, pass MySQL DSN in program arguments like `--mysql=username:password@protocol(address)/dbname?param=value`
+ 
+ After that, following operators will be available on suite level:
+ 
+ - `:sqlGetLong(sql, args...)` - Fetches single integer column, but returns it value as string
+ - `:sqlGetString(sql, args...)` - Fetches single string column
+ - `:sqlGetRow(sql, args...)` - Fetches full row and returns it as lua table (hashmap)
+ 
+ All methods above are supposed to work with one row only. If more than one row fetched from database, only 
+ last one will be returned. On the other hand, if there were no rows, this method will produce an error. 
+ 
+ 
  ### Time
  
  Syntax: `:unix()`

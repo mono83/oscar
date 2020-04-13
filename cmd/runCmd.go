@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -14,6 +15,8 @@ import (
 	"github.com/mono83/oscar/out"
 	"github.com/spf13/cobra"
 	"gopkg.in/ini.v1"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var verbose bool
@@ -22,6 +25,7 @@ var quiet bool
 var noAnsi bool
 var environmentFile string
 var exportFile string
+var mysqlDSN string
 var filter string
 var header string
 var outJSONFile string
@@ -63,6 +67,18 @@ var runCmd = &cobra.Command{
 		context := oscar.NewContext()
 		context.Import(values)
 		context.Set("lua.engine", "Oscar ][")
+
+		// Building MySQL connection
+		if len(mysqlDSN) > 0 {
+			db, err := sql.Open("mysql", mysqlDSN)
+			if err != nil {
+				return err
+			}
+			if err = db.Ping(); err != nil {
+				return err
+			}
+			context.SetDatabase(db)
+		}
 
 		// Registering event listeners (logging and etc)
 		reporter := &out.Report{}
@@ -164,4 +180,5 @@ func init() {
 	runCmd.Flags().StringVarP(&header, "lib", "l", "", "Add library lua file with helper functions")
 	runCmd.Flags().StringVarP(&outJSONFile, "json-report", "j", "", "JSON report filename")
 	runCmd.Flags().StringVar(&outHTMLPath, "html-report", "", "HTML report path")
+	runCmd.Flags().StringVar(&mysqlDSN, "mysql", "", "Full MySQL DSN in Golang format")
 }

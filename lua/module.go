@@ -27,6 +27,10 @@ var funcsTestCase = map[string]lua.LGFunction{
 	"set":             lSetVar,
 	"export":          lExportVar,
 
+	"sqlGetLong":   lSQLLong,
+	"sqlGetString": lSQLString,
+	"sqlGetRow":    lSQLRow,
+
 	"unix":      lUnix,
 	"sleep":     lSleep,
 	"sha256Hex": lSHA256Hex,

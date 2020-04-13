@@ -1,6 +1,7 @@
 package oscar
 
 import (
+	"database/sql"
 	"fmt"
 	"regexp"
 	"sync"
@@ -27,6 +28,8 @@ type Context struct {
 	m       sync.Mutex
 	values  map[string]string
 	exports map[string]string
+
+	database *sql.DB
 
 	ownerID int
 	wg      sync.WaitGroup
@@ -66,6 +69,28 @@ func (c *Context) Fork(id int) *Context {
 	go c2.listenEvents()
 
 	return c2
+}
+
+// SetDatabase sets up database connection
+func (c *Context) SetDatabase(db *sql.DB) {
+	if c.parent != nil {
+		c.parent.SetDatabase(db)
+		return
+	}
+
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	c.database = db
+}
+
+// GetDatabase returns database connection, associated with test context
+func (c *Context) GetDatabase() *sql.DB {
+	if c.parent != nil {
+		return c.parent.GetDatabase()
+	}
+
+	return c.database
 }
 
 func (c *Context) listenEvents() {

@@ -3,7 +3,9 @@ module github.com/mono83/oscar
 go 1.13
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/fatih/color v1.9.0
+	github.com/go-sql-driver/mysql v1.5.0
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mono83/table v0.0.0-20180821173246-a960a2b938c2
