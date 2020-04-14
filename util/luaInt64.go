@@ -1,8 +1,9 @@
 package util
 
 import (
-	"github.com/yuin/gopher-lua"
 	"strconv"
+
+	"github.com/yuin/gopher-lua"
 )
 
 // LuaToInt64 reads Lua function argument as string, and then parses it as int64

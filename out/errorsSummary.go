@@ -2,8 +2,9 @@ package out
 
 import (
 	"fmt"
-	"github.com/fatih/color"
 	"io"
+
+	"github.com/fatih/color"
 )
 
 // PrintTestCaseErrorsSummary outputs errors summary

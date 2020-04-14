@@ -3,9 +3,10 @@ package rsa
 import (
 	"encoding/base64"
 	"encoding/binary"
+	"time"
+
 	"github.com/mono83/oscar/util"
 	"github.com/yuin/gopher-lua"
-	"time"
 )
 
 // MetaTableName contains name of entry in Lua meta space for RSA structure

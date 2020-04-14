@@ -3,6 +3,7 @@ package lua
 import (
 	"encoding/base64"
 	"encoding/binary"
+
 	"github.com/mono83/oscar/util"
 	"github.com/yuin/gopher-lua"
 )

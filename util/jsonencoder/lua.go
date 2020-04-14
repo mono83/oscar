@@ -2,6 +2,7 @@ package jsonencoder
 
 import (
 	"encoding/json"
+
 	"github.com/yuin/gopher-lua"
 )
 

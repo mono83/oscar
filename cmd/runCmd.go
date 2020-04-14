@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/ini.v1"
 
+	// Registering MySQL driver
 	_ "github.com/go-sql-driver/mysql"
 )
 

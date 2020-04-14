@@ -6,19 +6,18 @@ clean: ## Clears environment
 	@rm -rf ./assets.go
 	@rm -rf release/*
 
+lint: ## Source code linting
+	@gofmt -e -d .
+	@! gofmt -e -d . | read
+	@golint -set_exit_status ./...
+
 test: ## Runs unit tests
 	@echo $(shell date +'%H:%M:%S') "\033[0;32mRunning unit tests\033[0m"
 	@CGO_ENABLED=0 go test -tags=http ./...
 
-deps: ## Download required dependencies
-	@echo $(shell date +'%H:%M:%S') "\033[0;32mDownloading dependencies\033[0m"
-	@go get github.com/stretchr/testify/assert
-	@go get ./...
-
-release: clean deps test
+release: clean lint test
 	@mkdir -p release/
 	go build -o release/oscar main/oscar.go
-	go build -o release/oscar_linux main/oscar.go
 
 cross: clean deps test ## Builds cross-OS binaries and run tests
 	@echo $(shell date +'%H:%M:%S') "\033[0;32mCompiling Linux version\033[0m"

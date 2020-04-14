@@ -2,6 +2,7 @@ package lua
 
 import (
 	"errors"
+
 	"github.com/mono83/oscar"
 	"github.com/mono83/oscar/events"
 	lua "github.com/yuin/gopher-lua"

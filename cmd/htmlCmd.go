@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"errors"
+	"io/ioutil"
+
 	"github.com/mono83/oscar/out"
 	"github.com/spf13/cobra"
-	"io/ioutil"
 )
 
 var htmlCmd = &cobra.Command{

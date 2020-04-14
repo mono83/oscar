@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/mono83/oscar/cmd"
 	"os"
+
+	"github.com/mono83/oscar/cmd"
 )
 
 func main() {

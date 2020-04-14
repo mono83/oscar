@@ -3,6 +3,7 @@ package jsonencoder
 import (
 	"encoding/json"
 	"errors"
+
 	"github.com/yuin/gopher-lua"
 )
 

@@ -1,10 +1,11 @@
 package out
 
 import (
-	"github.com/mono83/oscar/out/tpl"
 	"html/template"
 	"os"
 	"strconv"
+
+	"github.com/mono83/oscar/out/tpl"
 )
 
 // WriteHTMLFiles writes report into separate HTML files, placed in required folder

@@ -3,6 +3,7 @@ package lua
 import (
 	"crypto/sha256"
 	"fmt"
+
 	"github.com/yuin/gopher-lua"
 )
 

@@ -1,8 +1,9 @@
 package lua
 
 import (
-	"github.com/yuin/gopher-lua"
 	"time"
+
+	"github.com/yuin/gopher-lua"
 )
 
 // lUnix returns Unix timestamp in seconds

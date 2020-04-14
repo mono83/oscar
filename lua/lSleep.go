@@ -1,8 +1,9 @@
 package lua
 
 import (
-	"github.com/yuin/gopher-lua"
 	"time"
+
+	"github.com/yuin/gopher-lua"
 )
 
 // lSleep pauses execution for requested amount of milliseconds
